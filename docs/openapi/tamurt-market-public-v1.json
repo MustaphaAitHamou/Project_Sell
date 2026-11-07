@@ -1,0 +1,877 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Tamurt Market — API publique",
+    "version": "1.0.0",
+    "license": {
+      "name": "Propriétaire — Tamurt Services",
+      "identifier": "LicenseRef-Proprietary"
+    },
+    "description": "Lecture seule des données publiques (catégories, annonces, profils vendeurs). Aucune donnée personnelle non publique. Limite : 120 requêtes par minute et par adresse IP."
+  },
+  "servers": [
+    {
+      "url": "https://market.tamurt.example/api/v1"
+    }
+  ],
+  "security": [],
+  "paths": {
+    "/categories": {
+      "get": {
+        "operationId": "listCategories",
+        "summary": "Catégories publiques",
+        "responses": {
+          "200": {
+            "description": "Liste",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Category"
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/listings": {
+      "get": {
+        "operationId": "searchListings",
+        "summary": "Recherche d'annonces",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Texte recherché (tolère fautes de frappe et graphies latinisées).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "categorie",
+            "in": "query",
+            "required": false,
+            "description": "Slug de catégorie (sous-catégories incluses).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pays",
+            "in": "query",
+            "required": false,
+            "description": "Code pays ISO (FR, DZ…).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prix_min",
+            "in": "query",
+            "required": false,
+            "description": "Prix minimal (exige « pays »).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prix_max",
+            "in": "query",
+            "required": false,
+            "description": "Prix maximal (exige « pays »).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "etat",
+            "in": "query",
+            "required": false,
+            "description": "États séparés par des virgules (NEW_WITH_TAGS, VERY_GOOD…).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "livraison",
+            "in": "query",
+            "required": false,
+            "description": "1 : livraison proposée.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "vendeur",
+            "in": "query",
+            "required": false,
+            "description": "particulier | pro",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tri",
+            "in": "query",
+            "required": false,
+            "description": "pertinence | recent | prix_asc | prix_desc",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Page (1 à 50).",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page de résultats",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingPage"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/listings/{id}": {
+      "get": {
+        "operationId": "getListing",
+        "summary": "Fiche d'annonce",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Annonce",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sellers/{handle}": {
+      "get": {
+        "operationId": "getSeller",
+        "summary": "Profil vendeur public",
+        "parameters": [
+          {
+            "name": "handle",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SellerProfile"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Introuvable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Category": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parentSlug": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "transactional": {
+            "type": "boolean",
+            "description": "Achat intégré possible dans cette catégorie."
+          },
+          "reviewedBeforePublication": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "parentSlug",
+          "transactional",
+          "reviewedBeforePublication"
+        ],
+        "additionalProperties": false
+      },
+      "ListingPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/__shared#/$defs/ListingCard"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "pageCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "total": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageCount",
+          "total",
+          "pageSize"
+        ],
+        "additionalProperties": false
+      },
+      "ListingDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identifiant public de l'annonce."
+          },
+          "title": {
+            "type": "string"
+          },
+          "price": {
+            "$ref": "#/components/schemas/__shared#/$defs/Money"
+          },
+          "condition": {
+            "type": "string"
+          },
+          "brand": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "country": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2
+          },
+          "location": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "deliveryMethods": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "HAND_DELIVERY",
+                "NATIONAL_SHIPPING",
+                "TAMURT_TRANSPORT"
+              ]
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "RESERVED",
+              "SOLD"
+            ]
+          },
+          "image": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "publishedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "isDemo": {
+            "type": "boolean",
+            "description": "Annonce fictive de démonstration."
+          },
+          "url": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "attributes": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": [
+                "string",
+                "number",
+                "boolean"
+              ]
+            }
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "thumb": {
+                  "type": "string"
+                },
+                "large": {
+                  "type": "string"
+                },
+                "width": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "height": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "thumb",
+                "large",
+                "width",
+                "height"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "quantityAvailable": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "parcelSize": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "acceptsCrossBorder": {
+            "type": "boolean"
+          },
+          "seller": {
+            "$ref": "#/components/schemas/__shared#/$defs/SellerSummary"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "price",
+          "condition",
+          "brand",
+          "country",
+          "location",
+          "deliveryMethods",
+          "status",
+          "image",
+          "publishedAt",
+          "isDemo",
+          "url",
+          "description",
+          "category",
+          "attributes",
+          "images",
+          "quantityAvailable",
+          "parcelSize",
+          "acceptsCrossBorder",
+          "seller"
+        ],
+        "additionalProperties": false
+      },
+      "SellerProfile": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "INDIVIDUAL",
+              "BUSINESS"
+            ]
+          },
+          "identityVerified": {
+            "type": "boolean"
+          },
+          "rating": {
+            "type": "object",
+            "properties": {
+              "average": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "average",
+              "count"
+            ],
+            "additionalProperties": false
+          },
+          "salesCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "url": {
+            "type": "string"
+          },
+          "bio": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "location": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "memberSince": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "business": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "legalName": {
+                    "type": "string"
+                  },
+                  "tradeName": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "registrationCountry": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "legalName",
+                  "tradeName",
+                  "registrationCountry"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Identité du vendeur professionnel (obligation d'information)."
+          },
+          "listings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/__shared#/$defs/ListingCard"
+            }
+          }
+        },
+        "required": [
+          "handle",
+          "displayName",
+          "type",
+          "identityVerified",
+          "rating",
+          "salesCount",
+          "url",
+          "bio",
+          "location",
+          "memberSince",
+          "business",
+          "listings"
+        ],
+        "additionalProperties": false
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "__shared": {
+        "$defs": {
+          "ListingCard": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Identifiant public de l'annonce."
+              },
+              "title": {
+                "type": "string"
+              },
+              "price": {
+                "$ref": "#/components/schemas/__shared#/$defs/Money"
+              },
+              "condition": {
+                "type": "string"
+              },
+              "brand": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "country": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 2
+              },
+              "location": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "deliveryMethods": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "HAND_DELIVERY",
+                    "NATIONAL_SHIPPING",
+                    "TAMURT_TRANSPORT"
+                  ]
+                }
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ACTIVE",
+                  "RESERVED",
+                  "SOLD"
+                ]
+              },
+              "image": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "publishedAt": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "isDemo": {
+                "type": "boolean",
+                "description": "Annonce fictive de démonstration."
+              },
+              "url": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "price",
+              "condition",
+              "brand",
+              "country",
+              "location",
+              "deliveryMethods",
+              "status",
+              "image",
+              "publishedAt",
+              "isDemo",
+              "url"
+            ],
+            "additionalProperties": false
+          },
+          "Money": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "description": "Montant en unités minimales (centimes)."
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              "formatted": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "amount",
+              "currency",
+              "formatted"
+            ],
+            "additionalProperties": false
+          },
+          "SellerSummary": {
+            "type": "object",
+            "properties": {
+              "handle": {
+                "type": "string"
+              },
+              "displayName": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "INDIVIDUAL",
+                  "BUSINESS"
+                ]
+              },
+              "identityVerified": {
+                "type": "boolean"
+              },
+              "rating": {
+                "type": "object",
+                "properties": {
+                  "average": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "count": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "average",
+                  "count"
+                ],
+                "additionalProperties": false
+              },
+              "salesCount": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "url": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "handle",
+              "displayName",
+              "type",
+              "identityVerified",
+              "rating",
+              "salesCount",
+              "url"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    }
+  }
+}

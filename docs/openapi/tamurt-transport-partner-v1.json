@@ -1,0 +1,1469 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Tamurt Transport — API partenaire (PROPOSITION de Tamurt Market)",
+    "license": {
+      "name": "Propriétaire — Tamurt Services",
+      "identifier": "LicenseRef-Proprietary"
+    },
+    "version": "v1 (2026-11-01)",
+    "description": "Contrat proposé par Tamurt Market ; Tamurt Transport ne l'implémente pas encore. Authentification OAuth 2.0 client credentials (portées shipping:quote, shipping:reserve, shipping:track), idempotence obligatoire sur les écritures, webhooks signés HMAC-SHA256 (en-tête tamurt-signature : t=<timestamp>,v1=<hex>)."
+  },
+  "servers": [
+    {
+      "url": "{baseUrl}",
+      "variables": {
+        "baseUrl": {
+          "default": "https://transport.example.invalid/partner/v1",
+          "description": "[À DÉFINIR par l'équipe Tamurt Transport]"
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "oauth": []
+    }
+  ],
+  "paths": {
+    "/oauth/token": {
+      "post": {
+        "security": [],
+        "operationId": "issueToken",
+        "summary": "Obtenir un jeton de service (client credentials)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "grant_type": {
+                    "const": "client_credentials"
+                  },
+                  "client_id": {
+                    "type": "string"
+                  },
+                  "client_secret": {
+                    "type": "string"
+                  },
+                  "scope": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "grant_type",
+                  "client_id",
+                  "client_secret"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Jeton (durée ≤ 1 h)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur 400",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erreur 401",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "health",
+        "summary": "État du service",
+        "responses": {
+          "200": {
+            "description": "État",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erreur 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipping/quotes": {
+      "post": {
+        "operationId": "createQuotes",
+        "summary": "Demander des devis pour un colis",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "Clé unique par opération ; rejouer la même clé renvoie le même résultat.",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "Tamurt-Api-Version",
+            "in": "header",
+            "required": true,
+            "description": "Révision du contrat (actuelle : 2026-11-01).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Devis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur 400",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erreur 401",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erreur 403",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erreur 429",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erreur 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipping/reservations": {
+      "post": {
+        "operationId": "createReservation",
+        "summary": "Bloquer une capacité (avant paiement)",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "Clé unique par opération ; rejouer la même clé renvoie le même résultat.",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "Tamurt-Api-Version",
+            "in": "header",
+            "required": true,
+            "description": "Révision du contrat (actuelle : 2026-11-01).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Capacité bloquée (HELD)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reservation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur 400",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erreur 401",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erreur 409",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erreur 422",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erreur 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipping/reservations/{reservationId}/confirm": {
+      "post": {
+        "operationId": "confirmReservation",
+        "summary": "Confirmer la réservation (après paiement)",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "Clé unique par opération ; rejouer la même clé renvoie le même résultat.",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "Tamurt-Api-Version",
+            "in": "header",
+            "required": true,
+            "description": "Révision du contrat (actuelle : 2026-11-01).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmReservationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Réservation confirmée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reservation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur 400",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erreur 401",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erreur 404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erreur 409",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipping/reservations/{reservationId}/cancel": {
+      "post": {
+        "operationId": "cancelReservation",
+        "summary": "Annuler la réservation (compensation)",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "Clé unique par opération ; rejouer la même clé renvoie le même résultat.",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "Tamurt-Api-Version",
+            "in": "header",
+            "required": true,
+            "description": "Révision du contrat (actuelle : 2026-11-01).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelReservationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Réservation annulée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reservation"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erreur 401",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erreur 404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erreur 409",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipping/shipments/{shipmentId}": {
+      "get": {
+        "operationId": "getShipment",
+        "summary": "Suivi d'une expédition",
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Tamurt-Api-Version",
+            "in": "header",
+            "required": true,
+            "description": "Révision du contrat (actuelle : 2026-11-01).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Expédition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Shipment"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erreur 401",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erreur 404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipping/shipments/{shipmentId}/incidents": {
+      "post": {
+        "operationId": "reportIncident",
+        "summary": "Signaler un incident",
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "Clé unique par opération ; rejouer la même clé renvoie le même résultat.",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "Tamurt-Api-Version",
+            "in": "header",
+            "required": true,
+            "description": "Révision du contrat (actuelle : 2026-11-01).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncidentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Incident ouvert",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentAck"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erreur 400",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erreur 401",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erreur 404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {
+    "transportEvent": {
+      "post": {
+        "operationId": "receiveTransportEvent",
+        "summary": "Événements Transport → Market (11 types), signés ; Market répond 2xx après enregistrement idempotent (id unique).",
+        "parameters": [
+          {
+            "name": "tamurt-signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reçu"
+          },
+          "401": {
+            "description": "Signature invalide"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "oauth": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "/oauth/token",
+            "scopes": {
+              "shipping:quote": "Devis",
+              "shipping:reserve": "Réservations",
+              "shipping:track": "Suivi"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "QuoteRequest": {
+        "type": "object",
+        "properties": {
+          "partnerReference": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "origin": {
+            "type": "object",
+            "properties": {
+              "countryCode": {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$"
+              },
+              "city": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "regionCode": {
+                "type": "string",
+                "maxLength": 10
+              }
+            },
+            "required": [
+              "countryCode"
+            ]
+          },
+          "destination": {
+            "type": "object",
+            "properties": {
+              "countryCode": {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$"
+              },
+              "city": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "regionCode": {
+                "type": "string",
+                "maxLength": 10
+              }
+            },
+            "required": [
+              "countryCode"
+            ]
+          },
+          "parcel": {
+            "type": "object",
+            "properties": {
+              "weightGrams": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 30000
+              },
+              "sizeClass": {
+                "type": "string",
+                "enum": [
+                  "XS",
+                  "S",
+                  "M",
+                  "L",
+                  "XL"
+                ]
+              },
+              "declaredValue": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "currency": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{3}$"
+                  }
+                },
+                "required": [
+                  "amount",
+                  "currency"
+                ]
+              },
+              "categoryCode": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "isFragile": {
+                "default": false,
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "weightGrams",
+              "sizeClass",
+              "declaredValue",
+              "categoryCode"
+            ]
+          },
+          "earliestDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "latestDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "parcel"
+        ]
+      },
+      "ReservationRequest": {
+        "type": "object",
+        "properties": {
+          "quoteId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "partnerOrderId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "holdMinutes": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 60
+          }
+        },
+        "required": [
+          "quoteId",
+          "partnerOrderId",
+          "holdMinutes"
+        ]
+      },
+      "ConfirmReservationRequest": {
+        "type": "object",
+        "properties": {
+          "partnerOrderId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "paymentReference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "sender": {
+            "type": "object",
+            "properties": {
+              "displayName": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "phone": {
+                "type": "string",
+                "maxLength": 32
+              }
+            },
+            "required": [
+              "displayName"
+            ]
+          },
+          "recipient": {
+            "type": "object",
+            "properties": {
+              "displayName": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "phone": {
+                "type": "string",
+                "maxLength": 32
+              },
+              "city": {
+                "type": "string",
+                "maxLength": 120
+              }
+            },
+            "required": [
+              "displayName",
+              "city"
+            ]
+          }
+        },
+        "required": [
+          "partnerOrderId",
+          "paymentReference",
+          "sender",
+          "recipient"
+        ]
+      },
+      "CancelReservationRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "IncidentRequest": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "DAMAGED",
+              "LOST",
+              "DELAY",
+              "RECIPIENT_UNAVAILABLE",
+              "OTHER"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "type",
+          "description"
+        ]
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "minLength": 20
+          },
+          "token_type": {
+            "type": "string",
+            "const": "Bearer"
+          },
+          "expires_in": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 3600
+          },
+          "scope": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in",
+          "scope"
+        ],
+        "additionalProperties": false
+      },
+      "QuoteResponse": {
+        "type": "object",
+        "properties": {
+          "corridorStatus": {
+            "type": "string",
+            "enum": [
+              "LIVE",
+              "TEST_ONLY",
+              "DISABLED"
+            ]
+          },
+          "quotes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "quoteId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                "expiresAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "corridor": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{2}-[A-Z]{2}$"
+                },
+                "service": {
+                  "type": "string",
+                  "const": "crowdshipping"
+                },
+                "price": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "currency": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{3}$"
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false
+                },
+                "trip": {
+                  "type": "object",
+                  "properties": {
+                    "departureDate": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    "arrivalDate": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    "mode": {
+                      "type": "string",
+                      "enum": [
+                        "PLANE",
+                        "CAR",
+                        "FERRY",
+                        "TRAIN",
+                        "BUS",
+                        "OTHER"
+                      ]
+                    },
+                    "originCity": {
+                      "type": "string"
+                    },
+                    "destinationCity": {
+                      "type": "string"
+                    },
+                    "travelerRating": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 5
+                    },
+                    "travelerVerified": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "departureDate",
+                    "mode",
+                    "originCity",
+                    "destinationCity",
+                    "travelerVerified"
+                  ],
+                  "additionalProperties": false
+                },
+                "estimatedDelivery": {
+                  "type": "object",
+                  "properties": {
+                    "from": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    "to": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    }
+                  },
+                  "required": [
+                    "from",
+                    "to"
+                  ],
+                  "additionalProperties": false
+                },
+                "compliance": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ALLOWED",
+                        "CONDITIONAL",
+                        "TO_VERIFY",
+                        "PROHIBITED"
+                      ]
+                    },
+                    "notes": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "notes"
+                  ],
+                  "additionalProperties": false
+                },
+                "bookable": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "quoteId",
+                "expiresAt",
+                "corridor",
+                "service",
+                "price",
+                "trip",
+                "estimatedDelivery",
+                "compliance",
+                "bookable"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "notices": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "corridorStatus",
+          "quotes",
+          "notices"
+        ],
+        "additionalProperties": false
+      },
+      "Reservation": {
+        "type": "object",
+        "properties": {
+          "reservationId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "partnerOrderId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "HELD",
+              "CONFIRMED",
+              "CANCELLED",
+              "EXPIRED"
+            ]
+          },
+          "holdExpiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "price": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              }
+            },
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "additionalProperties": false
+          },
+          "shipmentId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "reservationId",
+          "partnerOrderId",
+          "status",
+          "holdExpiresAt",
+          "price",
+          "shipmentId"
+        ],
+        "additionalProperties": false
+      },
+      "Shipment": {
+        "type": "object",
+        "properties": {
+          "shipmentId": {
+            "type": "string"
+          },
+          "reservationId": {
+            "type": "string"
+          },
+          "partnerOrderId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_PICKUP",
+              "COLLECTED",
+              "IN_TRANSIT",
+              "CUSTOMS_HOLD",
+              "OUT_FOR_DELIVERY",
+              "DELIVERED",
+              "ISSUE",
+              "CANCELLED"
+            ]
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "eventId": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "PENDING_PICKUP",
+                    "COLLECTED",
+                    "IN_TRANSIT",
+                    "CUSTOMS_HOLD",
+                    "OUT_FOR_DELIVERY",
+                    "DELIVERED",
+                    "ISSUE",
+                    "CANCELLED"
+                  ]
+                },
+                "occurredAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "location": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "eventId",
+                "status",
+                "occurredAt",
+                "description"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "estimatedDelivery": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "to": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "from",
+                  "to"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "shipmentId",
+          "reservationId",
+          "partnerOrderId",
+          "status",
+          "events",
+          "estimatedDelivery"
+        ],
+        "additionalProperties": false
+      },
+      "IncidentAck": {
+        "type": "object",
+        "properties": {
+          "incidentId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "const": "OPEN"
+          }
+        },
+        "required": [
+          "incidentId",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "degraded"
+            ]
+          },
+          "apiVersion": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "apiVersion"
+        ],
+        "additionalProperties": false
+      },
+      "TransportError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_request",
+                  "unauthorized",
+                  "forbidden",
+                  "not_found",
+                  "conflict",
+                  "quote_expired",
+                  "capacity_unavailable",
+                  "corridor_closed",
+                  "item_not_allowed",
+                  "rate_limited",
+                  "unavailable"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "retryable": {
+                "default": false,
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "retryable"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "WebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "transport.quote.created",
+              "transport.reservation.created",
+              "transport.reservation.confirmed",
+              "transport.reservation.cancelled",
+              "transport.reservation.expired",
+              "transport.shipment.collected",
+              "transport.shipment.in_transit",
+              "transport.shipment.customs_hold",
+              "transport.shipment.out_for_delivery",
+              "transport.shipment.delivered",
+              "transport.shipment.issue_reported"
+            ]
+          },
+          "apiVersion": {
+            "type": "string",
+            "const": "v1"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "reservationId": {
+                "type": "string"
+              },
+              "partnerOrderId": {
+                "type": "string"
+              },
+              "shipmentId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "occurredAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              "location": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "issueType": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "reservationId",
+              "partnerOrderId",
+              "occurredAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "apiVersion",
+          "createdAt",
+          "data"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

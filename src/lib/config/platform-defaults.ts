@@ -36,6 +36,8 @@ export const PLATFORM_SETTINGS = [
   { key: "listings.maxActivePerIndividual", value: 300 },
   { key: "messaging.maxNewConversationsPerDay", value: 30 },
   { key: "messaging.maxMessagesPerMinute", value: 20 },
+  // Durée de conservation des événements de mesure d'audience (13 mois, recommandation CNIL).
+  { key: "privacy.analyticsRetentionDays", value: 395 },
 ] as const;
 
 export const SHIPPING_PROVIDERS = [

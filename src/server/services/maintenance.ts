@@ -3,6 +3,7 @@ import { db } from "@/server/db/client";
 import { drainJobs, recoverStuckJobs } from "@/server/jobs/runner";
 import { logger } from "@/server/logger";
 import { purgeRateLimitBuckets } from "@/server/security/rate-limit";
+import { getNumberSetting } from "@/server/settings";
 import { cleanupOrphanImages } from "./listings";
 import { expireUnpaidOrders } from "./orders/checkout";
 import { autoCompleteOrders } from "./orders/fulfillment";
@@ -43,6 +44,12 @@ export async function runMaintenance() {
     return 0;
   });
   await step("idempotencyRecordsPurged", async () => (await db.idempotencyRecord.deleteMany({ where: { expiresAt: { lt: new Date() } } })).count);
+  await step("expiredSessionsPurged", async () => (await db.session.deleteMany({ where: { expiresAt: { lt: new Date() } } })).count);
+  await step("expiredVerificationsPurged", async () => (await db.verification.deleteMany({ where: { expiresAt: { lt: new Date() } } })).count);
+  await step("analyticsEventsPurged", async () => {
+    const days = await getNumberSetting("privacy.analyticsRetentionDays");
+    return (await db.analyticsEvent.deleteMany({ where: { createdAt: { lt: new Date(Date.now() - days * 86_400_000) } } })).count;
+  });
   await step("jobsDrained", () => drainJobs(200));
   return report;
 }

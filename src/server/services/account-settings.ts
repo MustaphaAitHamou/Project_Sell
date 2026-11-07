@@ -44,6 +44,10 @@ export async function deleteOwnAccount(user: CurrentUser) {
     await tx.session.deleteMany({ where: { userId: user.id } });
     await tx.account.deleteMany({ where: { userId: user.id } });
     await tx.twoFactor.deleteMany({ where: { userId: user.id } });
+    await tx.notification.deleteMany({ where: { userId: user.id } });
+    await tx.notificationPreference.deleteMany({ where: { userId: user.id } });
+    // Mesure d'audience : les événements sont dissociés du compte (agrégats conservés).
+    await tx.analyticsEvent.updateMany({ where: { userId: user.id }, data: { userId: null } });
     await tx.userProfile.update({ where: { userId: user.id }, data: { displayName: "Membre supprimé", handle: `membre-supprime-${suffix}`, bio: null, avatarKey: null, cityName: null } });
     await tx.user.update({ where: { id: user.id }, data: { name: "Membre supprimé", email: `supprime+${user.id}@invalid.tamurt`, image: null, status: "DELETED", deletedAt: new Date(), emailVerified: false } });
     await audit({ actorId: user.id, action: "account.self_deleted", targetType: "user", targetId: user.id }, tx);

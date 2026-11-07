@@ -6,7 +6,7 @@ import { z } from "zod";
  * ══════════════════════════════════════════════════════════════════════════
  * Tamurt Transport (dépôt « Tamurt Sending ») n'expose aujourd'hui aucune API
  * partenaire : ce contrat est la proposition de Tamurt Market, à implémenter côté
- * Transport (voir docs/TRANSPORT_INTEGRATION.md et docs/openapi/tamurt-transport-partner-v1.yaml).
+ * Transport (voir docs/TRANSPORT_INTEGRATION.md et docs/openapi/tamurt-transport-partner-v1.json).
  * Ces schémas Zod sont la source de vérité : ils peuvent être extraits dans un paquet
  * partagé (@tamurt/transport-contract) utilisé par les deux applications.
  *

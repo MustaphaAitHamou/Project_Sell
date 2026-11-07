@@ -1,0 +1,423 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Tamurt Market — API interne Tamurt HQ",
+    "version": "1.0.0",
+    "license": {
+      "name": "Propriétaire — Tamurt Services",
+      "identifier": "LicenseRef-Proprietary"
+    },
+    "description": "Indicateurs agrégés (aucune donnée personnelle). Jeton de service créé en administration (affiché une seule fois), portée metrics:read, restriction d'adresses IP possible, 60 requêtes par minute."
+  },
+  "servers": [
+    {
+      "url": "https://market.tamurt.example/api/internal/hq/v1"
+    }
+  ],
+  "security": [
+    {
+      "serviceToken": []
+    }
+  ],
+  "paths": {
+    "/metrics": {
+      "get": {
+        "operationId": "getMetrics",
+        "summary": "Indicateurs agrégés de la marketplace",
+        "parameters": [
+          {
+            "name": "jours",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 365,
+              "default": 30
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Indicateurs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HqMetrics"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non authentifié",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Accès refusé",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "serviceToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "tmhq_…"
+      }
+    },
+    "schemas": {
+      "HqMetrics": {
+        "type": "object",
+        "properties": {
+          "apiVersion": {
+            "type": "string",
+            "const": "v1"
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "production",
+              "simulation"
+            ],
+            "description": "« simulation » : prestataires de test, aucun montant réel."
+          },
+          "windowDays": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "users": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "newInWindow": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "activeInWindow": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "total",
+              "newInWindow",
+              "activeInWindow"
+            ],
+            "additionalProperties": false
+          },
+          "listings": {
+            "type": "object",
+            "properties": {
+              "active": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "pendingReview": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "publishedInWindow": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "active",
+              "pendingReview",
+              "publishedInWindow"
+            ],
+            "additionalProperties": false
+          },
+          "orders": {
+            "type": "object",
+            "properties": {
+              "byStatus": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "paidInWindow": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "completedInWindow": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "byStatus",
+              "paidInWindow",
+              "completedInWindow"
+            ],
+            "additionalProperties": false
+          },
+          "gmv": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                },
+                "amount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "simulated": {
+                  "type": "boolean"
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "currency",
+                "amount",
+                "simulated",
+                "orders"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Volume d'affaires des ventes conclues : revient aux vendeurs, ce n'est pas un chiffre d'affaires."
+          },
+          "platformRevenue": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                },
+                "amount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "simulated": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "currency",
+                "amount",
+                "simulated"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Frais acquis par la plateforme (registre comptable)."
+          },
+          "paymentProviderFees": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                },
+                "amount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "simulated": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "currency",
+                "amount",
+                "simulated"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "refunds": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                },
+                "amount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "simulated": {
+                  "type": "boolean"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "currency",
+                "amount",
+                "simulated",
+                "count"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "trust": {
+            "type": "object",
+            "properties": {
+              "openDisputes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "openReports": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "openDisputes",
+              "openReports"
+            ],
+            "additionalProperties": false
+          },
+          "transport": {
+            "type": "object",
+            "properties": {
+              "integration": {
+                "type": "string",
+                "enum": [
+                  "disabled",
+                  "simulator",
+                  "live"
+                ]
+              },
+              "health": {
+                "type": "string"
+              },
+              "reservationsByStatus": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              }
+            },
+            "required": [
+              "integration",
+              "health",
+              "reservationsByStatus"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "apiVersion",
+          "generatedAt",
+          "environment",
+          "windowDays",
+          "users",
+          "listings",
+          "orders",
+          "gmv",
+          "platformRevenue",
+          "paymentProviderFees",
+          "refunds",
+          "trust",
+          "transport"
+        ],
+        "additionalProperties": false
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

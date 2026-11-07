@@ -291,6 +291,12 @@
   .prose-legal strong {
     color: var(--foreground);
   }
+  .prose-legal a {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
   .scrollbar-none {
     scrollbar-width: none;
   }
