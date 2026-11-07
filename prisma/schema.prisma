@@ -1092,6 +1092,8 @@ model Payment {
   failureCode       String?       @db.VarChar(80)
   failureMessage    String?       @db.VarChar(500)
   isSimulated       Boolean       @default(false)
+  // Paiement réussi en double (ou après annulation de la commande) : tracé puis remboursé automatiquement.
+  isDuplicate       Boolean       @default(false)
   expiresAt         DateTime?
   succeededAt       DateTime?
   createdAt         DateTime      @default(now())
