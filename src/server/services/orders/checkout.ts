@@ -119,7 +119,8 @@ export async function getCheckoutPreview(
   const address = opts.addressId ? await getOwnedAddress(user, opts.addressId) : (addresses.find((a) => a.isDefault) ?? addresses[0] ?? null);
   const shippingMethod = opts.deliveryMethod && opts.deliveryMethod !== "HAND_DELIVERY";
   const destinationCountry = shippingMethod && address ? address.countryCode : listing.countryCode;
-  const eligibility = await getPurchaseEligibility({ ...listing, sellerStatus: listing.seller.status }, { id: user.id, countryCode: destinationCountry }, destinationCountry);
+  // Pays du payeur = pays du profil de l'acheteur ; pays de destination = adresse de livraison.
+  const eligibility = await getPurchaseEligibility({ ...listing, sellerStatus: listing.seller.status }, { id: user.id, countryCode: user.profile?.countryCode ?? destinationCountry }, destinationCountry);
   const available = eligibility.methods.filter((m) => m.available);
   const method = (opts.deliveryMethod && available.some((m) => m.method === opts.deliveryMethod) ? opts.deliveryMethod : (available[0]?.method ?? null)) as DeliveryMethod | null;
 

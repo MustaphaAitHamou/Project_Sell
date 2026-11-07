@@ -81,7 +81,9 @@ export async function getPurchaseEligibility(listing: ListingForEligibility, buy
   if (!checkoutEnabled) reasons.push("CHECKOUT_DISABLED");
   if (classifiedOnly) reasons.push("COUNTRY_CLASSIFIED_ONLY");
   if (!provider) reasons.push("NO_PAYMENT_PROVIDER");
-  else if (!provider.capabilities.currencies.includes(listing.currency) || !provider.capabilities.payerCountries.includes(destination) || !provider.capabilities.payoutCountries.includes(listing.countryCode))
+  // Le payeur est l'acheteur (pays de son profil) : un membre de la diaspora en France peut
+  // payer avec un moyen de paiement français une livraison destinée à l'Algérie.
+  else if (!provider.capabilities.currencies.includes(listing.currency) || !provider.capabilities.payerCountries.includes(buyer?.countryCode ?? destination) || !provider.capabilities.payoutCountries.includes(listing.countryCode))
     reasons.push("PROVIDER_UNSUPPORTED");
   if (category && !category.isTransactional) reasons.push("CATEGORY_NOT_TRANSACTIONAL");
   if (isCrossBorder && !crossBorderEnabled) reasons.push("CROSS_BORDER_DISABLED");

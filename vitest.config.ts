@@ -23,6 +23,7 @@ export default defineConfig({
           name: "integration",
           environment: "node",
           include: ["tests/integration/**/*.test.ts"],
+          globalSetup: ["tests/integration/global-setup.ts"],
           setupFiles: ["tests/integration/setup.ts"],
           // Une base PostgreSQL partagée : exécution séquentielle des fichiers.
           fileParallelism: false,

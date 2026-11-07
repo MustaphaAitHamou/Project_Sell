@@ -149,15 +149,19 @@ async function processPaymentEvent(providerCode: string, event: NormalizedPaymen
 }
 
 async function onPaymentSucceeded(providerCode: string, event: Extract<NormalizedPaymentEvent, { type: "payment.succeeded" }>): Promise<string> {
+  // Contrôle préalable hors transaction : l'alerte d'audit doit survivre au rejet de l'événement
+  // (le montant d'un paiement est figé à sa création, le contrôle est donc fiable).
+  const pre = await db.payment.findUnique({ where: { providerSessionId: event.providerSessionId }, select: { id: true, provider: true, amount: true, currency: true } });
+  if (pre && pre.provider === providerCode && (event.amount !== pre.amount || event.currency !== pre.currency)) {
+    await audit({ actorId: null, action: "payment.amount_mismatch", targetType: "payment", targetId: pre.id, metadata: { expected: pre.amount, received: event.amount, currency: event.currency } });
+    throw new Error("Montant ou devise du paiement incohérent avec la commande");
+  }
   return db.$transaction(async (tx) => {
     const payment = await tx.payment.findUnique({ where: { providerSessionId: event.providerSessionId } });
     if (!payment || payment.provider !== providerCode) throw new Error("Paiement inconnu pour ce prestataire");
     if (payment.status === "SUCCEEDED") return "already_processed";
-    if (event.amount !== payment.amount || event.currency !== payment.currency) {
-      // Montant incohérent : jamais de passage en « payé » ; alerte pour examen humain.
-      await audit({ actorId: null, action: "payment.amount_mismatch", targetType: "payment", targetId: payment.id, metadata: { expected: payment.amount, received: event.amount, currency: event.currency } }, tx);
-      throw new Error("Montant ou devise du paiement incohérent avec la commande");
-    }
+    // Défense en profondeur : jamais de passage en « payé » avec un montant incohérent.
+    if (event.amount !== payment.amount || event.currency !== payment.currency) throw new Error("Montant ou devise du paiement incohérent avec la commande");
     const order = await lockOrder(tx, payment.orderId);
     const isEffective = order.status === "PAYMENT_PENDING" || order.status === "CREATED";
     await tx.payment.update({
