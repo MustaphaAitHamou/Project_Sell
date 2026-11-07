@@ -2,7 +2,7 @@ import "server-only";
 import { Prisma, type DeliveryMethod } from "@/generated/prisma/client";
 import { getShippingAdapter } from "@/integrations/shipping-providers/registry";
 import { PARCEL_SIZE_MAX_GRAMS } from "@/features/listings/schemas";
-import { generateOrderReference } from "@/lib/domain/ids";
+import { generateOrderReference, listingPath } from "@/lib/domain/ids";
 import { MoneyError } from "@/lib/domain/money";
 import { computeOrderPricing, type PricingResult } from "@/lib/domain/pricing";
 import { track } from "@/server/analytics";
@@ -34,6 +34,7 @@ export interface CheckoutPreview {
     imageId: string | null;
     deliveryMethods: DeliveryMethod[];
     isDemo: boolean;
+    path: string;
   };
   eligibility: PurchaseEligibility;
   method: DeliveryMethod | null;
@@ -160,6 +161,7 @@ export async function getCheckoutPreview(
       imageId: listing.images[0]?.id ?? null,
       deliveryMethods: listing.deliveryMethods,
       isDemo: listing.isDemo,
+      path: listingPath(listing.slug, listing.publicId),
     },
     eligibility,
     method,
