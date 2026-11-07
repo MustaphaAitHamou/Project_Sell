@@ -950,8 +950,9 @@ model Order {
   shippingAddress      Json?
   reservationExpiresAt DateTime?
   disputeWindowEndsAt  DateTime?
-  // Remise en main propre : code à 6 chiffres haché (HMAC + poivre), jamais stocké en clair.
-  handoverCodeHash     String?
+  // Remise en main propre : sel aléatoire du code à 6 chiffres. Le code est dérivé
+  // (HMAC-SHA256 avec un poivre serveur) et n'est jamais stocké en clair.
+  handoverSalt         String?        @db.VarChar(64)
   handoverAttempts     Int            @default(0)
   version              Int            @default(0)
   // Clé fournie par le client à la validation : empêche les commandes en double (double clic, rejeu).

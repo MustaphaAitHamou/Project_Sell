@@ -65,9 +65,11 @@ describe("cycle de vie des annonces", () => {
     expect(canTransitionListing("PENDING_REVIEW", "ACTIVE", "SELLER")).toBe(false);
     expect(canTransitionListing("SUSPENDED", "ACTIVE", "SELLER")).toBe(false);
   });
-  it("seul le système réserve ou vend", () => {
-    expect(canTransitionListing("ACTIVE", "SOLD", "SELLER")).toBe(false);
+  it("seul le système réserve ; le vendeur peut déclarer une vente hors plateforme", () => {
+    expect(canTransitionListing("ACTIVE", "RESERVED", "SELLER")).toBe(false);
     expect(canTransitionListing("ACTIVE", "RESERVED", "SYSTEM")).toBe(true);
+    expect(canTransitionListing("ACTIVE", "SOLD", "SELLER")).toBe(true);
+    expect(canTransitionListing("RESERVED", "SOLD", "SELLER")).toBe(false);
   });
   it("supprimée est terminal", () => expect(Object.keys(LISTING_TRANSITIONS.DELETED)).toHaveLength(0));
   it("tous les états cibles existent", () => {

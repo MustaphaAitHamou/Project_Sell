@@ -25,7 +25,8 @@ export const LISTING_TRANSITIONS: Record<ListingState, Edges> = {
   REJECTED: { DRAFT: ["SELLER"], PENDING_REVIEW: ["SELLER"], DELETED: ["SELLER"] },
   ACTIVE: {
     RESERVED: ["SYSTEM"],
-    SOLD: ["SYSTEM"],
+    // SELLER : vente conclue hors plateforme (mode petites annonces) ; sans effet sur la réputation.
+    SOLD: ["SYSTEM", "SELLER"],
     ARCHIVED: ["SELLER"],
     SUSPENDED: ["MODERATOR"],
     DELETED: ["SELLER", "MODERATOR"],

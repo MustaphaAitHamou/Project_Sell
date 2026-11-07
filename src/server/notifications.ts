@@ -39,10 +39,11 @@ export const DEFAULT_EMAIL_PREFS: Record<(typeof NOTIFICATION_CATEGORIES)[number
 export async function notify(
   tx: DbOrTx,
   userId: string,
-  n: { type: NotificationType; title: string; body: string; link?: string; data?: Prisma.InputJsonValue },
+  n: { type: NotificationType; title: string; body: string; link?: string; data?: Prisma.InputJsonValue; emailDedupeKey?: string; inApp?: boolean },
 ) {
-  await tx.notification.create({ data: { userId, type: n.type, title: n.title, body: n.body, link: n.link ?? null, data: n.data } });
-  await enqueue(tx, "notification.email", { userId, type: n.type, title: n.title, body: n.body, link: n.link ?? null });
+  if (n.inApp !== false) await tx.notification.create({ data: { userId, type: n.type, title: n.title, body: n.body, link: n.link ?? null, data: n.data } });
+  // Regroupement des emails (ex. un seul email par conversation et par quart d'heure).
+  await enqueue(tx, "notification.email", { userId, type: n.type, title: n.title, body: n.body, link: n.link ?? null }, n.emailDedupeKey ? { dedupeKey: n.emailDedupeKey } : {});
 }
 
 export async function emailAllowed(userId: string, type: NotificationType): Promise<boolean> {
