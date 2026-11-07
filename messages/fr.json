@@ -268,7 +268,9 @@
     "recentPrivacy": "Stockées uniquement sur cet appareil.",
     "showResults": "Afficher les résultats",
     "activeFilters": "Filtres actifs",
-    "currencyFilterNote": "Le filtre de prix s'applique dans la devise du pays choisi."
+    "currencyFilterNote": "Le filtre de prix s'applique dans la devise du pays choisi.",
+    "clear": "Effacer",
+    "filtersButton": "Filtres"
   },
   "auth": {
     "signInTitle": "Connexion",
@@ -280,7 +282,7 @@
     "passwordHint": "10 caractères minimum, avec au moins une lettre et un chiffre.",
     "displayName": "Pseudonyme public",
     "displayNameHint": "Affiché sur vos annonces. N'indiquez ni nom complet ni coordonnées.",
-    "acceptTerms": "J'accepte les {terms} et la {privacy}.",
+    "acceptTerms": "J'accepte les <terms>conditions générales d'utilisation</terms> et la <privacy>politique de confidentialité</privacy>.",
     "termsLink": "conditions générales d'utilisation",
     "privacyLink": "politique de confidentialité",
     "signInCta": "Se connecter",

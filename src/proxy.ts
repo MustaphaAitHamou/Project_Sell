@@ -39,7 +39,7 @@ export function proxy(request: NextRequest) {
   const csp = contentSecurityPolicy(nonce);
 
   const { pathname, search } = request.nextUrl;
-  if (PROTECTED.test(pathname) && !getSessionCookie(request)) {
+  if (PROTECTED.test(pathname) && !getSessionCookie(request, { cookiePrefix: "tamurt-market" })) {
     const url = request.nextUrl.clone();
     url.pathname = "/connexion";
     url.search = `?next=${encodeURIComponent(pathname + search)}`;
