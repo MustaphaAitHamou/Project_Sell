@@ -57,9 +57,13 @@
   --overlay: rgb(15 23 19 / 0.5);
   --shadow-color: 150 20% 15%;
   --radius: 0.875rem;
+
+  /* Couleur des marques de graphiques (validée : bande de luminosité, chroma, contraste ≥ 3:1). */
+  --chart-1: #16855f;
 }
 
 .dark {
+  --chart-1: #2fa877;
   --background: #0f1512;
   --foreground: #e6ede8;
   --card: #161e1a;
@@ -137,6 +141,7 @@
   --color-warning-soft: var(--warning-soft);
   --color-warning-soft-foreground: var(--warning-soft-foreground);
   --color-info: var(--info);
+  --color-chart-1: var(--chart-1);
   --color-info-soft: var(--info-soft);
   --color-info-soft-foreground: var(--info-soft-foreground);
   --color-overlay: var(--overlay);
