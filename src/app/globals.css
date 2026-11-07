@@ -1,0 +1,295 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Identité visuelle Tamurt Market
+ * ────────────────────────────────
+ * - Vert profond #126B50 : confiance, sérieux (couleur principale)
+ * - Blanc cassé #F8FAF8 : fond lumineux et calme
+ * - Anthracite #202A25 : texte, contraste élevé
+ * - Terre cuite : accent discret (mises en avant ponctuelles), évoque l'artisanat
+ *
+ * Toute la palette est définie ici sous forme de jetons : la modifier ne demande
+ * aucune intervention dans les composants. Contrastes vérifiés AA (texte ≥ 4,5:1).
+ */
+:root {
+  --background: #f8faf8;
+  --foreground: #202a25;
+  --card: #ffffff;
+  --card-foreground: #202a25;
+  --popover: #ffffff;
+  --muted: #eef2ef;
+  --muted-foreground: #56625b;
+  --subtle: #f3f6f4;
+  --border: #dce3de;
+  --border-strong: #c4cec7;
+  --input: #c9d3cc;
+  --ring: #126b50;
+
+  --primary: #126b50;
+  --primary-hover: #0e5741;
+  --primary-foreground: #ffffff;
+  --primary-soft: #e2f1ea;
+  --primary-soft-foreground: #0c4a37;
+
+  --accent: #c4623a;
+  --accent-hover: #a9512d;
+  --accent-foreground: #ffffff;
+  --accent-soft: #fbece4;
+  --accent-soft-foreground: #84391b;
+
+  --destructive: #c0352e;
+  --destructive-foreground: #ffffff;
+  --destructive-soft: #fcebea;
+  --destructive-soft-foreground: #8f231d;
+  --success: #1c7d52;
+  --success-soft: #e4f3eb;
+  --success-soft-foreground: #125a3a;
+  --warning: #a8670f;
+  --warning-soft: #fdf2df;
+  --warning-soft-foreground: #7a4a08;
+  --info: #22599a;
+  --info-soft: #e8f0fa;
+  --info-soft-foreground: #183f6e;
+
+  --overlay: rgb(15 23 19 / 0.5);
+  --shadow-color: 150 20% 15%;
+  --radius: 0.875rem;
+}
+
+.dark {
+  --background: #0f1512;
+  --foreground: #e6ede8;
+  --card: #161e1a;
+  --card-foreground: #e6ede8;
+  --popover: #1a2420;
+  --muted: #1d2823;
+  --muted-foreground: #9eaba3;
+  --subtle: #131b17;
+  --border: #29352f;
+  --border-strong: #37463e;
+  --input: #3a4941;
+  --ring: #49c495;
+
+  --primary: #3fb98a;
+  --primary-hover: #57c99c;
+  --primary-foreground: #06170f;
+  --primary-soft: #143529;
+  --primary-soft-foreground: #a6e6cb;
+
+  --accent: #e08a62;
+  --accent-hover: #ea9c78;
+  --accent-foreground: #1d0c04;
+  --accent-soft: #382218;
+  --accent-soft-foreground: #f4c6ad;
+
+  --destructive: #f0736b;
+  --destructive-foreground: #1d0503;
+  --destructive-soft: #3a1917;
+  --destructive-soft-foreground: #f8b8b3;
+  --success: #57c48f;
+  --success-soft: #133325;
+  --success-soft-foreground: #a8e5c6;
+  --warning: #e5ad52;
+  --warning-soft: #362813;
+  --warning-soft-foreground: #f2d29c;
+  --info: #79aef0;
+  --info-soft: #172a42;
+  --info-soft-foreground: #bcd6f7;
+
+  --overlay: rgb(0 0 0 / 0.6);
+  --shadow-color: 150 30% 2%;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-subtle: var(--subtle);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-foreground: var(--primary-soft-foreground);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-foreground: var(--accent-soft-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-destructive-soft-foreground: var(--destructive-soft-foreground);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-soft-foreground: var(--success-soft-foreground);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-soft-foreground: var(--warning-soft-foreground);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-soft-foreground: var(--info-soft-foreground);
+  --color-overlay: var(--overlay);
+
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 3px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 6px);
+  --radius-2xl: calc(var(--radius) + 12px);
+
+  --shadow-soft: 0 1px 2px hsl(var(--shadow-color) / 0.06), 0 2px 8px hsl(var(--shadow-color) / 0.06);
+  --shadow-lift: 0 2px 4px hsl(var(--shadow-color) / 0.06), 0 12px 32px -8px hsl(var(--shadow-color) / 0.18);
+
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  --font-display: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+
+  --animate-fade-in: fade-in 180ms ease-out both;
+  --animate-rise: rise 260ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: -400px 0;
+    }
+    to {
+      background-position: 400px 0;
+    }
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+    letter-spacing: -0.02em;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--primary-soft);
+    color: var(--primary-soft-foreground);
+  }
+  input[type="search"]::-webkit-search-cancel-button {
+    appearance: none;
+  }
+  /* Respect strict du réglage « réduire les animations ». */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .container-page {
+    width: 100%;
+    margin-inline: auto;
+    max-width: 80rem;
+    padding-inline: 1rem;
+  }
+  @media (min-width: 640px) {
+    .container-page {
+      padding-inline: 1.5rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .container-page {
+      padding-inline: 2rem;
+    }
+  }
+  .skeleton {
+    background: linear-gradient(90deg, var(--muted) 0px, var(--subtle) 120px, var(--muted) 240px);
+    background-size: 800px 100%;
+    animation: var(--animate-shimmer);
+    border-radius: var(--radius-md);
+  }
+  .prose-legal h2 {
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+  .prose-legal h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.05rem;
+    font-weight: 650;
+  }
+  .prose-legal p,
+  .prose-legal li {
+    color: var(--muted-foreground);
+    line-height: 1.7;
+  }
+  .prose-legal p {
+    margin-block: 0.75rem;
+  }
+  .prose-legal ul {
+    list-style: disc;
+    padding-inline-start: 1.25rem;
+    margin-block: 0.75rem;
+  }
+  .prose-legal strong {
+    color: var(--foreground);
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}

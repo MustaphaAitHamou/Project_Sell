@@ -1,0 +1,1721 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// Tamurt Market — schéma relationnel
+// ═══════════════════════════════════════════════════════════════════════════
+// Conventions :
+// - Identifiants : UUIDv7 (ordonnés dans le temps, index compacts) pour les tables
+//   métier ; UUIDv4 texte pour les tables d'authentification gérées par Better Auth.
+// - Montants : entiers en unités mineures (centimes, ou dinars pour le DZD qui n'a
+//   pas de subdivision usuelle) accompagnés d'une devise ISO 4217 explicite.
+//   Aucun flottant n'est utilisé pour la comptabilité.
+// - Poids en grammes (Int). Dates en UTC (timestamptz).
+// - Les contraintes CHECK, index partiels, recherche plein texte, triggers
+//   d'immuabilité et contrôles d'équilibre comptable sont écrits à la main dans
+//   les migrations SQL (prisma/migrations/*/migration.sql).
+// - Les données privées (adresses, téléphone, coordonnées) sont séparées des
+//   données publiques (user_profile) et ne sont jamais exposées publiquement.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────── Énumérations ───────────────────────────────
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED // suspension temporaire (modération), réversible
+  BANNED // exclusion, réexamen humain possible
+  DELETED // compte supprimé (données anonymisées)
+}
+
+/// Rôles du personnel. Tout utilisateur peut acheter et vendre : ce ne sont pas des rôles.
+enum StaffRole {
+  MODERATOR
+  SUPPORT
+  FINANCE
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum SellerType {
+  INDIVIDUAL
+  BUSINESS
+}
+
+enum VerificationType {
+  EMAIL
+  PHONE
+  IDENTITY
+  BUSINESS
+  BENEFICIAL_OWNER
+}
+
+enum VerificationStatus {
+  NOT_STARTED
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+/// Mode d'achat disponible dans un pays.
+enum CheckoutMode {
+  INTEGRATED // paiement protégé sur la plateforme (prestataire agréé configuré)
+  CLASSIFIED_ONLY // petites annonces : contact vendeur, aucune transaction sur la plateforme
+  DISABLED
+}
+
+enum ListingStatus {
+  DRAFT
+  PENDING_REVIEW
+  ACTIVE
+  RESERVED
+  SOLD
+  SUSPENDED
+  REJECTED
+  ARCHIVED
+  DELETED
+}
+
+enum ItemCondition {
+  NEW_WITH_TAGS
+  NEW_WITHOUT_TAGS
+  VERY_GOOD
+  GOOD
+  FAIR
+  FOR_PARTS
+}
+
+enum DeliveryMethod {
+  HAND_DELIVERY
+  NATIONAL_SHIPPING
+  TAMURT_TRANSPORT
+}
+
+enum ParcelSize {
+  XS
+  S
+  M
+  L
+  XL
+}
+
+enum AttributeType {
+  TEXT
+  NUMBER
+  SELECT
+  BOOLEAN
+}
+
+enum ComplianceStatus {
+  ALLOWED
+  CONDITIONAL
+  TO_VERIFY
+  PROHIBITED
+}
+
+enum ComplianceRecordStatus {
+  VALID
+  EXPIRED
+  REVOKED
+}
+
+enum OrderStatus {
+  CREATED
+  PAYMENT_PENDING
+  PAID
+  SHIPPING_PENDING
+  READY_TO_SHIP
+  IN_TRANSIT
+  DELIVERED
+  DISPUTE_WINDOW
+  COMPLETED
+  CANCELLED
+  REFUND_PENDING
+  REFUNDED
+  DISPUTED
+}
+
+enum PaymentStatus {
+  REQUIRES_ACTION
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  EXPIRED
+}
+
+enum RefundStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+}
+
+enum PayoutStatus {
+  PENDING
+  BLOCKED
+  PROCESSING
+  PAID
+  FAILED
+  CANCELLED
+}
+
+enum LedgerDirection {
+  DEBIT
+  CREDIT
+}
+
+enum FeeKind {
+  BUYER_PROTECTION
+  SELLER_COMMISSION
+}
+
+enum TaxStatus {
+  NONE
+  INCLUDED
+  ESTIMATED
+  UNKNOWN
+}
+
+enum ShippingProviderKind {
+  NATIONAL_CARRIER
+  CROWDSHIPPING
+  HAND_DELIVERY
+}
+
+enum ShipmentStatus {
+  PENDING
+  LABEL_CREATED
+  HANDED_OVER
+  IN_TRANSIT
+  CUSTOMS_HOLD
+  OUT_FOR_DELIVERY
+  DELIVERED
+  EXCEPTION
+  RETURNED
+  CANCELLED
+}
+
+enum TransportReservationStatus {
+  HELD
+  CONFIRMED
+  CANCELLED
+  EXPIRED
+  FAILED
+}
+
+enum ConversationStatus {
+  OPEN
+  CLOSED
+}
+
+enum MessageKind {
+  TEXT
+  SYSTEM
+}
+
+enum NotificationType {
+  NEW_MESSAGE
+  NEW_ORDER
+  PAYMENT_CONFIRMED
+  ORDER_SHIPPED
+  ORDER_DELIVERED
+  ORDER_COMPLETED
+  ORDER_CANCELLED
+  REFUND_ISSUED
+  PAYOUT_SENT
+  DISPUTE_OPENED
+  DISPUTE_UPDATED
+  REVIEW_RECEIVED
+  LISTING_APPROVED
+  LISTING_REJECTED
+  LISTING_SUSPENDED
+  SAVED_SEARCH_MATCH
+  ACCOUNT
+  SYSTEM
+}
+
+enum ReportTargetType {
+  LISTING
+  USER
+  MESSAGE
+  REVIEW
+}
+
+enum ReportReason {
+  PROHIBITED_ITEM
+  COUNTERFEIT
+  SCAM
+  MISLEADING
+  OFFENSIVE
+  SPAM
+  WRONG_CATEGORY
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  IN_REVIEW
+  ACTIONED
+  DISMISSED
+}
+
+enum ReviewStatus {
+  VISIBLE
+  PENDING
+  HIDDEN
+}
+
+enum ReviewRole {
+  BUYER
+  SELLER
+}
+
+enum DisputeReason {
+  NOT_RECEIVED
+  DAMAGED
+  NOT_AS_DESCRIBED
+  COUNTERFEIT
+  MISLEADING
+  LOST
+  WRONG_RECIPIENT
+  OTHER
+}
+
+enum DisputeStatus {
+  OPEN
+  AWAITING_SELLER
+  AWAITING_BUYER
+  UNDER_REVIEW
+  RESOLVED
+  CLOSED
+}
+
+enum DisputeResolution {
+  FULL_REFUND
+  PARTIAL_REFUND
+  NO_REFUND
+}
+
+enum DisputeMessageVisibility {
+  PARTIES
+  STAFF_ONLY
+}
+
+enum ModerationActionType {
+  APPROVE_LISTING
+  REJECT_LISTING
+  SUSPEND_LISTING
+  REINSTATE_LISTING
+  REMOVE_LISTING
+  SUSPEND_USER
+  BAN_USER
+  REINSTATE_USER
+  HIDE_MESSAGE
+  HIDE_REVIEW
+  RESTORE_REVIEW
+  DISMISS_REPORT
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}
+
+enum IntegrationDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum IntegrationEventStatus {
+  PENDING
+  PROCESSED
+  FAILED
+  DEAD
+  IGNORED
+}
+
+enum IntegrationHealthStatus {
+  UNKNOWN
+  UP
+  DEGRADED
+  DOWN
+}
+
+// ─────────────────────── Authentification (Better Auth) ───────────────────────
+
+model User {
+  id               String     @id
+  name             String
+  email            String     @unique
+  emailVerified    Boolean    @default(false)
+  image            String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  twoFactorEnabled Boolean?   @default(false)
+  // Champs applicatifs : jamais modifiables par l'utilisateur via l'API d'authentification.
+  status           UserStatus @default(ACTIVE)
+  statusReason     String?
+  locale           String     @default("fr")
+  termsAcceptedAt  DateTime?
+  onboardedAt      DateTime?
+  lastSeenAt       DateTime?
+  deletedAt        DateTime?
+
+  sessions       Session[]
+  accounts       Account[]
+  twoFactors     TwoFactor[]
+  profile        UserProfile?
+  roles          UserRole[]         @relation("UserRoles")
+  verifications  UserVerification[]
+  business       BusinessProfile?
+  contact        UserContact?
+  addresses      Address[]
+  payoutAccounts PayoutAccount[]
+
+  listings            Listing[]
+  listingImages       ListingImage[]
+  favorites           Favorite[]
+  savedSearches       SavedSearch[]
+  buyerConversations  Conversation[]           @relation("ConversationBuyer")
+  sellerConversations Conversation[]           @relation("ConversationSeller")
+  messages            Message[]
+  notifications       Notification[]
+  notificationPrefs   NotificationPreference[]
+  ordersAsBuyer       Order[]                  @relation("OrderBuyer")
+  ordersAsSeller      Order[]                  @relation("OrderSeller")
+  payouts             Payout[]
+  reviewsWritten      Review[]                 @relation("ReviewAuthor")
+  reviewsReceived     Review[]                 @relation("ReviewSubject")
+  disputesOpened      Dispute[]                @relation("DisputeOpener")
+  disputesAssigned    Dispute[]                @relation("DisputeAssignee")
+  reportsMade         Report[]                 @relation("ReportReporter")
+  blocksMade          UserBlock[]              @relation("Blocker")
+  blocksReceived      UserBlock[]              @relation("Blocked")
+  auditLogs           AuditLog[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model TwoFactor {
+  id                      String    @id
+  secret                  String
+  backupCodes             String
+  userId                  String
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verified                Boolean?  @default(true)
+  failedVerificationCount Int?      @default(0)
+  lockedUntil             DateTime?
+
+  @@index([userId])
+  @@map("twoFactor")
+}
+
+model RateLimit {
+  id          String @id
+  key         String @unique
+  count       Int
+  lastRequest BigInt
+
+  @@map("rateLimit")
+}
+
+// ─────────────────────────────── Identité & confiance ───────────────────────────────
+
+/// Profil PUBLIC : uniquement des informations destinées à être affichées.
+model UserProfile {
+  userId               String     @id
+  user                 User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  handle               String     @unique @db.VarChar(40)
+  displayName          String     @db.VarChar(60)
+  bio                  String?    @db.VarChar(1000)
+  avatarKey            String?
+  countryCode          String?    @db.Char(2)
+  country              Country?   @relation(fields: [countryCode], references: [code])
+  regionId             String?    @db.Uuid
+  region               Region?    @relation(fields: [regionId], references: [id])
+  cityName             String?    @db.VarChar(120)
+  sellerType           SellerType @default(INDIVIDUAL)
+  // Agrégats de réputation, mis à jour dans la transaction de l'événement concerné.
+  ratingSum            Int        @default(0)
+  ratingCount          Int        @default(0)
+  salesCount           Int        @default(0)
+  purchasesCount       Int        @default(0)
+  sellerCancelledCount Int        @default(0)
+  disputesLostCount    Int        @default(0)
+  // Dénormalisé depuis user_verification pour les filtres de recherche.
+  identityVerified     Boolean    @default(false)
+  updatedAt            DateTime   @updatedAt
+
+  @@index([countryCode])
+  @@map("user_profile")
+}
+
+/// Coordonnées PRIVÉES : jamais affichées publiquement ni transmises à l'autre partie.
+model UserContact {
+  userId          String    @id
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName       String?   @db.VarChar(80)
+  lastName        String?   @db.VarChar(80)
+  phone           String?   @db.VarChar(32)
+  phoneVerifiedAt DateTime?
+  birthYear       Int?
+  updatedAt       DateTime  @updatedAt
+
+  @@map("user_contact")
+}
+
+model UserRole {
+  userId      String
+  role        StaffRole
+  user        User      @relation("UserRoles", fields: [userId], references: [id], onDelete: Cascade)
+  grantedById String?
+  grantedAt   DateTime  @default(now())
+
+  @@id([userId, role])
+  @@map("user_role")
+}
+
+/// État courant de chaque vérification. Aucune copie de pièce d'identité n'est stockée :
+/// seule la référence de la vérification chez le prestataire agréé est conservée.
+model UserVerification {
+  id            String             @id @default(uuid(7)) @db.Uuid
+  userId        String
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          VerificationType
+  status        VerificationStatus @default(PENDING)
+  provider      String?
+  providerRef   String?
+  failureReason String?
+  verifiedAt    DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@unique([userId, type])
+  @@map("user_verification")
+}
+
+/// Informations des vendeurs professionnels (traçabilité des professionnels, DSA art. 30).
+model BusinessProfile {
+  userId              String             @id
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  legalName           String             @db.VarChar(200)
+  tradeName           String?            @db.VarChar(200)
+  legalForm           String?            @db.VarChar(80)
+  registrationCountry String             @db.Char(2)
+  registrationNumber  String             @db.VarChar(64)
+  vatNumber           String?            @db.VarChar(32)
+  addressLine1        String             @db.VarChar(200)
+  addressLine2        String?            @db.VarChar(200)
+  postalCode          String?            @db.VarChar(16)
+  city                String             @db.VarChar(120)
+  countryCode         String             @db.Char(2)
+  contactEmail        String             @db.VarChar(200)
+  contactPhone        String?            @db.VarChar(32)
+  verificationStatus  VerificationStatus @default(NOT_STARTED)
+  verifiedAt          DateTime?
+  traderDeclarationAt DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@unique([registrationCountry, registrationNumber])
+  @@map("business_profile")
+}
+
+model Address {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label       String?   @db.VarChar(60)
+  fullName    String    @db.VarChar(120)
+  line1       String    @db.VarChar(200)
+  line2       String?   @db.VarChar(200)
+  postalCode  String?   @db.VarChar(16)
+  city        String    @db.VarChar(120)
+  regionId    String?   @db.Uuid
+  region      Region?   @relation(fields: [regionId], references: [id])
+  countryCode String    @db.Char(2)
+  country     Country   @relation(fields: [countryCode], references: [code])
+  phone       String?   @db.VarChar(32)
+  isDefault   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@index([userId])
+  @@map("address")
+}
+
+model UserBlock {
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+  @@map("user_block")
+}
+
+// ─────────────────────────────── Référentiels géographiques ───────────────────────────────
+// Versionnés et administrables : aucun nombre de wilayas ou de départements n'est figé dans le code.
+
+model Country {
+  code              String       @id @db.Char(2)
+  name              String
+  nativeName        String?
+  currency          String       @db.Char(3)
+  phonePrefix       String       @db.VarChar(6)
+  regionLabel       String       @default("Région")
+  isActive          Boolean      @default(false)
+  checkoutMode      CheckoutMode @default(DISABLED)
+  payoutsEnabled    Boolean      @default(false)
+  geoDatasetVersion String?
+  sortOrder         Int          @default(0)
+  updatedAt         DateTime     @updatedAt
+
+  regions   Region[]
+  cities    City[]
+  listings  Listing[]
+  profiles  UserProfile[]
+  addresses Address[]
+
+  @@map("country")
+}
+
+model Region {
+  id             String  @id @default(uuid(7)) @db.Uuid
+  countryCode    String  @db.Char(2)
+  country        Country @relation(fields: [countryCode], references: [code])
+  code           String  @db.VarChar(10)
+  name           String
+  slug           String
+  isActive       Boolean @default(true)
+  datasetVersion String
+  sortOrder      Int     @default(0)
+
+  cities    City[]
+  listings  Listing[]
+  profiles  UserProfile[]
+  addresses Address[]
+
+  @@unique([countryCode, code])
+  @@unique([countryCode, slug])
+  @@map("region")
+}
+
+model City {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  countryCode String   @db.Char(2)
+  country     Country  @relation(fields: [countryCode], references: [code])
+  regionId    String   @db.Uuid
+  region      Region   @relation(fields: [regionId], references: [id])
+  name        String
+  slug        String
+  // Variantes normalisées (minuscules, sans accents) : « bejaia », « bgayet », « bougie »…
+  searchNames String[]
+  postalCode  String?  @db.VarChar(16)
+  isPopular   Boolean  @default(false)
+
+  listings Listing[]
+
+  @@unique([countryCode, slug])
+  @@index([regionId])
+  @@index([searchNames], type: Gin)
+  @@map("city")
+}
+
+// ─────────────────────────────── Catalogue ───────────────────────────────
+
+model Category {
+  id                String     @id @default(uuid(7)) @db.Uuid
+  parentId          String?    @db.Uuid
+  parent            Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children          Category[] @relation("CategoryTree")
+  slug              String     @unique @db.VarChar(80)
+  name              String     @db.VarChar(80)
+  translations      Json       @default("{}")
+  description       String?    @db.VarChar(500)
+  icon              String?    @db.VarChar(40)
+  sortOrder         Int        @default(0)
+  isActive          Boolean    @default(true)
+  // Achat intégré possible (faux pour véhicules, immobilier, services : hors MVP transactionnel).
+  isTransactional   Boolean    @default(true)
+  // Annonces soumises à validation manuelle avant publication (produits réglementés).
+  requiresReview    Boolean    @default(false)
+  // Catégorie interdite : publication refusée côté serveur.
+  isProhibited      Boolean    @default(false)
+  conditionRequired Boolean    @default(true)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  attributes      CategoryAttribute[]
+  listings        Listing[]
+  complianceRules ComplianceRule[]
+
+  @@index([parentId, sortOrder])
+  @@map("category")
+}
+
+model CategoryAttribute {
+  id           String        @id @default(uuid(7)) @db.Uuid
+  categoryId   String        @db.Uuid
+  category     Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  key          String        @db.VarChar(40)
+  label        String        @db.VarChar(80)
+  type         AttributeType
+  options      Json?
+  unit         String?       @db.VarChar(16)
+  isRequired   Boolean       @default(false)
+  isFilterable Boolean       @default(false)
+  sortOrder    Int           @default(0)
+
+  @@unique([categoryId, key])
+  @@map("category_attribute")
+}
+
+model Brand {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  name           String   @db.VarChar(60)
+  slug           String   @unique @db.VarChar(60)
+  normalizedName String   @unique @db.VarChar(60)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  listings Listing[]
+
+  @@map("brand")
+}
+
+model Listing {
+  id                 String                   @id @default(uuid(7)) @db.Uuid
+  // Identifiant public court et stable, indépendant du slug (URL : /produit/<slug>-<publicId>).
+  publicId           String                   @unique @db.VarChar(12)
+  slug               String                   @db.VarChar(120)
+  sellerId           String
+  seller             User                     @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  status             ListingStatus            @default(DRAFT)
+  title              String                   @db.VarChar(100)
+  description        String                   @db.VarChar(5000)
+  categoryId         String                   @db.Uuid
+  category           Category                 @relation(fields: [categoryId], references: [id])
+  brandId            String?                  @db.Uuid
+  brand              Brand?                   @relation(fields: [brandId], references: [id])
+  brandName          String?                  @db.VarChar(60)
+  condition          ItemCondition?
+  // Valeurs des attributs de catégorie, validées contre category_attribute (JSONB indexé GIN).
+  attributes         Json                     @default("{}")
+  priceAmount        Int
+  currency           String                   @db.Char(3)
+  quantity           Int                      @default(1)
+  // Décrémenté atomiquement à la réservation : empêche deux ventes du même exemplaire.
+  quantityAvailable  Int                      @default(1)
+  countryCode        String                   @db.Char(2)
+  country            Country                  @relation(fields: [countryCode], references: [code])
+  regionId           String                   @db.Uuid
+  region             Region                   @relation(fields: [regionId], references: [id])
+  cityId             String?                  @db.Uuid
+  city               City?                    @relation(fields: [cityId], references: [id])
+  locality           String?                  @db.VarChar(120)
+  deliveryMethods    DeliveryMethod[]
+  parcelSize         ParcelSize?
+  weightGrams        Int?
+  // Le vendeur accepte un acheminement transfrontalier si la conformité l'autorise.
+  acceptsCrossBorder Boolean                  @default(false)
+  viewCount          Int                      @default(0)
+  favoriteCount      Int                      @default(0)
+  version            Int                      @default(0)
+  moderationNote     String?                  @db.VarChar(1000)
+  // Donnée de démonstration explicitement fictive.
+  isDemo             Boolean                  @default(false)
+  publishedAt        DateTime?
+  soldAt             DateTime?
+  archivedAt         DateTime?
+  deletedAt          DateTime?
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+  // Vecteur plein texte maintenu par trigger (français + simple, sans accents).
+  searchVector       Unsupported("tsvector")?
+
+  images        ListingImage[]
+  revisions     ListingRevision[]
+  favorites     Favorite[]
+  conversations Conversation[]
+  orders        Order[]
+  orderItems    OrderItem[]
+  quotes        ShippingQuote[]
+
+  @@index([status, publishedAt(sort: Desc)])
+  @@index([status, categoryId, publishedAt(sort: Desc)])
+  @@index([status, countryCode, regionId])
+  @@index([status, priceAmount])
+  @@index([sellerId, status, createdAt(sort: Desc)])
+  @@map("listing")
+}
+
+/// Photos ré-encodées en WebP (métadonnées EXIF/GPS supprimées), en deux variantes.
+model ListingImage {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  // Nulle tant que la photo n'est pas rattachée à une annonce (envoi avant enregistrement).
+  listingId   String?  @db.Uuid
+  listing     Listing? @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  thumbKey    String   @unique
+  largeKey    String   @unique
+  width       Int
+  height      Int
+  sizeBytes   Int
+  blurDataUrl String?  @db.VarChar(2000)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([listingId, sortOrder])
+  @@index([ownerId, createdAt])
+  @@map("listing_image")
+}
+
+model ListingRevision {
+  id            String   @id @default(uuid(7)) @db.Uuid
+  listingId     String   @db.Uuid
+  listing       Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  version       Int
+  editorId      String
+  snapshot      Json
+  changedFields String[]
+  createdAt     DateTime @default(now())
+
+  @@unique([listingId, version])
+  @@map("listing_revision")
+}
+
+model Favorite {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listingId String   @db.Uuid
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, listingId])
+  @@index([listingId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("favorite")
+}
+
+model SavedSearch {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String    @db.VarChar(80)
+  query         Json
+  queryHash     String    @db.VarChar(64)
+  notify        Boolean   @default(false)
+  lastCheckedAt DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@unique([userId, queryHash])
+  @@map("saved_search")
+}
+
+// ─────────────────────────────── Conformité ───────────────────────────────
+
+/// Matrice pays vendeur × pays acheteur × catégorie × prestataire de paiement × transporteur.
+/// Une dimension nulle signifie « toutes ». La règle la plus spécifique s'applique ;
+/// à spécificité égale, la plus restrictive. En l'absence de règle, un flux
+/// transfrontalier est « À vérifier » (donc bloqué).
+model ComplianceRule {
+  id                    String           @id @default(uuid(7)) @db.Uuid
+  originCountry         String?          @db.Char(2)
+  destinationCountry    String?          @db.Char(2)
+  categoryId            String?          @db.Uuid
+  category              Category?        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  paymentProvider       String?          @db.VarChar(40)
+  carrier               String?          @db.VarChar(40)
+  status                ComplianceStatus
+  conditions            String?          @db.VarChar(2000)
+  maxDeclaredValueMinor Int?
+  legalBasis            String?          @db.VarChar(1000)
+  notes                 String?          @db.VarChar(2000)
+  reviewedAt            DateTime?
+  reviewedByName        String?          @db.VarChar(200)
+  updatedById           String?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@index([originCountry, destinationCountry])
+  @@map("compliance_rule")
+}
+
+/// Preuves de validation juridique/opérationnelle (corridor, prestataire, document légal…).
+model ComplianceRecord {
+  id           String                 @id @default(uuid(7)) @db.Uuid
+  subjectType  String                 @db.VarChar(40)
+  subjectRef   String                 @db.VarChar(120)
+  title        String                 @db.VarChar(200)
+  status       ComplianceRecordStatus @default(VALID)
+  validatedBy  String                 @db.VarChar(200)
+  validatedAt  DateTime
+  expiresAt    DateTime?
+  documentRef  String?                @db.VarChar(500)
+  notes        String?                @db.VarChar(2000)
+  recordedById String
+  createdAt    DateTime               @default(now())
+
+  @@index([subjectType, subjectRef])
+  @@map("compliance_record")
+}
+
+// ─────────────────────────────── Commandes ───────────────────────────────
+
+model Order {
+  id                   String         @id @default(uuid(7)) @db.Uuid
+  reference            String         @unique @db.VarChar(20)
+  buyerId              String
+  buyer                User           @relation("OrderBuyer", fields: [buyerId], references: [id], onDelete: Restrict)
+  sellerId             String
+  seller               User           @relation("OrderSeller", fields: [sellerId], references: [id], onDelete: Restrict)
+  listingId            String         @db.Uuid
+  listing              Listing        @relation(fields: [listingId], references: [id], onDelete: Restrict)
+  status               OrderStatus    @default(CREATED)
+  deliveryMethod       DeliveryMethod
+  currency             String         @db.Char(3)
+  // Montants figés à la création (détail et règles appliquées dans pricing_snapshot).
+  itemsSubtotal        Int
+  buyerFee             Int
+  shippingAmount       Int
+  taxAmount            Int            @default(0)
+  totalAmount          Int
+  sellerNetAmount      Int
+  originCountry        String         @db.Char(2)
+  destinationCountry   String         @db.Char(2)
+  isCrossBorder        Boolean        @default(false)
+  // Instantané PRIVÉ de l'adresse de livraison (visible acheteur, vendeur après paiement, personnel habilité).
+  shippingAddress      Json?
+  reservationExpiresAt DateTime?
+  disputeWindowEndsAt  DateTime?
+  // Remise en main propre : code à 6 chiffres haché (HMAC + poivre), jamais stocké en clair.
+  handoverCodeHash     String?
+  handoverAttempts     Int            @default(0)
+  version              Int            @default(0)
+  // Clé fournie par le client à la validation : empêche les commandes en double (double clic, rejeu).
+  idempotencyKey       String         @unique @db.VarChar(80)
+  isSimulated          Boolean        @default(false)
+  paidAt               DateTime?
+  shippedAt            DateTime?
+  deliveredAt          DateTime?
+  completedAt          DateTime?
+  cancelledAt          DateTime?
+  cancelReason         String?        @db.VarChar(500)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  items                 OrderItem[]
+  history               OrderStatusHistory[]
+  pricing               PricingSnapshot?
+  payments              Payment[]
+  refunds               Refund[]
+  payout                Payout?
+  ledgerTransactions    LedgerTransaction[]
+  shipment              Shipment?
+  transportReservations TransportReservation[]
+  disputes              Dispute[]
+  reviews               Review[]
+  conversations         Conversation[]
+
+  @@index([buyerId, createdAt(sort: Desc)])
+  @@index([sellerId, createdAt(sort: Desc)])
+  @@index([status, reservationExpiresAt])
+  @@index([status, disputeWindowEndsAt])
+  @@index([listingId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String         @id @default(uuid(7)) @db.Uuid
+  orderId    String         @db.Uuid
+  order      Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  listingId  String         @db.Uuid
+  listing    Listing        @relation(fields: [listingId], references: [id], onDelete: Restrict)
+  title      String         @db.VarChar(100)
+  unitPrice  Int
+  quantity   Int
+  currency   String         @db.Char(3)
+  categoryId String         @db.Uuid
+  condition  ItemCondition?
+  imageKey   String?
+
+  @@index([orderId])
+  @@map("order_item")
+}
+
+model OrderStatusHistory {
+  id         String       @id @default(uuid(7)) @db.Uuid
+  orderId    String       @db.Uuid
+  order      Order        @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  fromStatus OrderStatus?
+  toStatus   OrderStatus
+  actorType  String       @db.VarChar(16)
+  actorId    String?
+  reason     String?      @db.VarChar(500)
+  metadata   Json?
+  createdAt  DateTime     @default(now())
+
+  @@index([orderId, createdAt])
+  @@map("order_status_history")
+}
+
+/// Calcul des montants figé au moment de la commande, à partir des seules valeurs serveur.
+model PricingSnapshot {
+  orderId           String    @id @db.Uuid
+  order             Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  calculatorVersion String    @db.VarChar(16)
+  currency          String    @db.Char(3)
+  unitPrice         Int
+  quantity          Int
+  itemsSubtotal     Int
+  buyerFeeRuleId    String?   @db.Uuid
+  buyerFeeRateBps   Int
+  buyerFeeFixed     Int       @default(0)
+  buyerFee          Int
+  sellerFeeRuleId   String?   @db.Uuid
+  sellerFeeRateBps  Int       @default(0)
+  sellerFee         Int       @default(0)
+  shippingQuoteId   String?   @db.Uuid
+  shippingProvider  String?   @db.VarChar(40)
+  shippingAmount    Int
+  taxAmount         Int       @default(0)
+  taxStatus         TaxStatus @default(NONE)
+  taxNote           String?   @db.VarChar(500)
+  totalAmount       Int
+  sellerNetAmount   Int
+  breakdown         Json
+  computedAt        DateTime  @default(now())
+
+  @@map("pricing_snapshot")
+}
+
+/// Règles de frais versionnées : une modification crée une nouvelle version (historique conservé).
+model FeeRule {
+  id          String      @id @default(uuid(7)) @db.Uuid
+  kind        FeeKind
+  currency    String?     @db.Char(3)
+  countryCode String?     @db.Char(2)
+  sellerType  SellerType?
+  rateBps     Int
+  fixedAmount Int         @default(0)
+  minAmount   Int         @default(0)
+  maxAmount   Int?
+  activeFrom  DateTime    @default(now())
+  activeUntil DateTime?
+  note        String?     @db.VarChar(500)
+  createdById String?
+  createdAt   DateTime    @default(now())
+
+  @@index([kind, activeFrom])
+  @@map("fee_rule")
+}
+
+// ─────────────────────────────── Paiements & comptabilité ───────────────────────────────
+
+/// Intention de paiement et son issue (équivalent PaymentIntent) : une ligne par tentative.
+model Payment {
+  id                String        @id @default(uuid(7)) @db.Uuid
+  orderId           String        @db.Uuid
+  order             Order         @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  provider          String        @db.VarChar(40)
+  providerSessionId String?       @unique
+  providerPaymentId String?       @unique
+  idempotencyKey    String        @unique @db.VarChar(120)
+  amount            Int
+  currency          String        @db.Char(3)
+  status            PaymentStatus @default(REQUIRES_ACTION)
+  amountRefunded    Int           @default(0)
+  providerFeeAmount Int?
+  failureCode       String?       @db.VarChar(80)
+  failureMessage    String?       @db.VarChar(500)
+  isSimulated       Boolean       @default(false)
+  expiresAt         DateTime?
+  succeededAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  refunds Refund[]
+
+  @@index([orderId])
+  @@index([status, createdAt])
+  @@map("payment")
+}
+
+model Refund {
+  id               String       @id @default(uuid(7)) @db.Uuid
+  orderId          String       @db.Uuid
+  order            Order        @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  paymentId        String       @db.Uuid
+  payment          Payment      @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  disputeId        String?      @db.Uuid
+  amount           Int
+  currency         String       @db.Char(3)
+  reason           String       @db.VarChar(500)
+  includesShipping Boolean      @default(false)
+  status           RefundStatus @default(PENDING)
+  providerRefundId String?      @unique
+  idempotencyKey   String       @unique @db.VarChar(120)
+  initiatedById    String?
+  failureMessage   String?      @db.VarChar(500)
+  succeededAt      DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([orderId])
+  @@map("refund")
+}
+
+model PayoutAccount {
+  id                String   @id @default(uuid(7)) @db.Uuid
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider          String   @db.VarChar(40)
+  providerAccountId String   @unique
+  countryCode       String   @db.Char(2)
+  currency          String   @db.Char(3)
+  payoutsEnabled    Boolean  @default(false)
+  requirementsDue   String[]
+  isSimulated       Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([userId, provider])
+  @@map("payout_account")
+}
+
+model Payout {
+  id                 String       @id @default(uuid(7)) @db.Uuid
+  orderId            String       @unique @db.Uuid
+  order              Order        @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  sellerId           String
+  seller             User         @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  amount             Int
+  currency           String       @db.Char(3)
+  provider           String       @db.VarChar(40)
+  status             PayoutStatus @default(PENDING)
+  blockedReason      String?      @db.VarChar(500)
+  providerTransferId String?      @unique
+  idempotencyKey     String       @unique @db.VarChar(120)
+  isSimulated        Boolean      @default(false)
+  scheduledFor       DateTime?
+  failureMessage     String?      @db.VarChar(500)
+  paidAt             DateTime?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  @@index([sellerId, status])
+  @@index([status, scheduledFor])
+  @@map("payout")
+}
+
+/// Registre comptable technique en partie double, immuable (triggers SQL) et équilibré
+/// par transaction et par devise (contrainte différée vérifiée au COMMIT).
+model LedgerTransaction {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  orderId        String?  @db.Uuid
+  order          Order?   @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  kind           String   @db.VarChar(40)
+  currency       String   @db.Char(3)
+  idempotencyKey String   @unique @db.VarChar(160)
+  description    String   @db.VarChar(300)
+  occurredAt     DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  entries LedgerEntry[]
+
+  @@index([orderId])
+  @@index([kind, occurredAt])
+  @@map("ledger_transaction")
+}
+
+model LedgerEntry {
+  id            String            @id @default(uuid(7)) @db.Uuid
+  transactionId String            @db.Uuid
+  transaction   LedgerTransaction @relation(fields: [transactionId], references: [id], onDelete: Restrict)
+  account       String            @db.VarChar(60)
+  direction     LedgerDirection
+  amount        Int
+  currency      String            @db.Char(3)
+  createdAt     DateTime          @default(now())
+
+  @@index([transactionId])
+  @@index([account, currency])
+  @@map("ledger_entry")
+}
+
+/// Événements reçus des prestataires (paiement, livraison, Transport). L'unicité
+/// (source, eventId) rend tout webhook rejoué sans effet.
+model WebhookEvent {
+  id             String                 @id @default(uuid(7)) @db.Uuid
+  source         String                 @db.VarChar(40)
+  eventId        String                 @db.VarChar(200)
+  eventType      String                 @db.VarChar(120)
+  payload        Json
+  signatureValid Boolean
+  status         IntegrationEventStatus @default(PENDING)
+  attempts       Int                    @default(0)
+  lastError      String?                @db.VarChar(1000)
+  receivedAt     DateTime               @default(now())
+  processedAt    DateTime?
+
+  @@unique([source, eventId])
+  @@index([status, receivedAt])
+  @@map("webhook_event")
+}
+
+model IdempotencyRecord {
+  scope       String   @db.VarChar(60)
+  key         String   @db.VarChar(120)
+  userId      String?
+  requestHash String   @db.VarChar(64)
+  response    Json?
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+
+  @@id([scope, key])
+  @@index([expiresAt])
+  @@map("idempotency_record")
+}
+
+// ─────────────────────────────── Logistique ───────────────────────────────
+
+model ShippingProvider {
+  code                String               @id @db.VarChar(40)
+  name                String               @db.VarChar(80)
+  kind                ShippingProviderKind
+  isEnabled           Boolean              @default(false)
+  isSandbox           Boolean              @default(false)
+  supportedCountries  String[]
+  supportsCrossBorder Boolean              @default(false)
+  // Capacités déclarées : quote, label, pickupPoints, tracking, cancel, returns, incidents.
+  capabilities        Json                 @default("{}")
+  notes               String?              @db.VarChar(1000)
+  updatedAt           DateTime             @updatedAt
+
+  @@map("shipping_provider")
+}
+
+model ShippingQuote {
+  id                 String   @id @default(uuid(7)) @db.Uuid
+  listingId          String   @db.Uuid
+  listing            Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyerId            String?
+  providerCode       String   @db.VarChar(40)
+  serviceCode        String   @db.VarChar(60)
+  serviceName        String   @db.VarChar(120)
+  amount             Int
+  currency           String   @db.Char(3)
+  originCountry      String   @db.Char(2)
+  destinationCountry String   @db.Char(2)
+  estimatedDaysMin   Int?
+  estimatedDaysMax   Int?
+  externalQuoteId    String?  @db.VarChar(120)
+  // Détails non personnels (ex. date et mode du trajet Transport).
+  details            Json?
+  isSimulated        Boolean  @default(false)
+  expiresAt          DateTime
+  usedByOrderId      String?  @unique @db.Uuid
+  createdAt          DateTime @default(now())
+
+  transportReservation TransportReservation?
+
+  @@index([listingId, buyerId, createdAt])
+  @@map("shipping_quote")
+}
+
+model Shipment {
+  id                 String         @id @default(uuid(7)) @db.Uuid
+  orderId            String         @unique @db.Uuid
+  order              Order          @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  providerCode       String         @db.VarChar(40)
+  serviceCode        String         @db.VarChar(60)
+  status             ShipmentStatus @default(PENDING)
+  trackingNumber     String?        @db.VarChar(80)
+  trackingUrl        String?        @db.VarChar(500)
+  labelKey           String?
+  externalShipmentId String?        @db.VarChar(120)
+  isSimulated        Boolean        @default(false)
+  originCountry      String         @db.Char(2)
+  destinationCountry String         @db.Char(2)
+  handedOverAt       DateTime?
+  deliveredAt        DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  events ShipmentEvent[]
+
+  @@unique([providerCode, externalShipmentId])
+  @@index([status])
+  @@map("shipment")
+}
+
+model ShipmentEvent {
+  id              String         @id @default(uuid(7)) @db.Uuid
+  shipmentId      String         @db.Uuid
+  shipment        Shipment       @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  status          ShipmentStatus
+  description     String         @db.VarChar(300)
+  location        String?        @db.VarChar(120)
+  source          String         @db.VarChar(20)
+  externalEventId String?        @db.VarChar(200)
+  occurredAt      DateTime
+  createdAt       DateTime       @default(now())
+
+  @@unique([shipmentId, externalEventId])
+  @@index([shipmentId, occurredAt])
+  @@map("shipment_event")
+}
+
+/// Réservation de capacité chez Tamurt Transport. Market conserve sa référence de commande,
+/// Transport sa référence de réservation et d'expédition (identifiants externes stables).
+model TransportReservation {
+  id                    String                     @id @default(uuid(7)) @db.Uuid
+  orderId               String?                    @db.Uuid
+  order                 Order?                     @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  shippingQuoteId       String                     @unique @db.Uuid
+  quote                 ShippingQuote              @relation(fields: [shippingQuoteId], references: [id], onDelete: Restrict)
+  externalReservationId String                     @unique @db.VarChar(120)
+  externalShipmentId    String?                    @unique @db.VarChar(120)
+  status                TransportReservationStatus @default(HELD)
+  amount                Int
+  currency              String                     @db.Char(3)
+  corridor              String                     @db.VarChar(5)
+  holdExpiresAt         DateTime
+  confirmedAt           DateTime?
+  cancelledAt           DateTime?
+  lastSyncedAt          DateTime?
+  isSimulated           Boolean                    @default(false)
+  createdAt             DateTime                   @default(now())
+  updatedAt             DateTime                   @updatedAt
+
+  @@index([orderId])
+  @@index([status, holdExpiresAt])
+  @@map("transport_reservation")
+}
+
+/// Journal des échanges avec les systèmes externes (sans donnée personnelle) : visibilité
+/// d'exploitation, diagnostic et audit des intégrations.
+model IntegrationEvent {
+  id            String                 @id @default(uuid(7)) @db.Uuid
+  system        String                 @db.VarChar(20)
+  direction     IntegrationDirection
+  operation     String                 @db.VarChar(80)
+  aggregateType String?                @db.VarChar(40)
+  aggregateId   String?                @db.VarChar(80)
+  correlationId String?                @db.VarChar(80)
+  status        IntegrationEventStatus
+  httpStatus    Int?
+  durationMs    Int?
+  attempt       Int                    @default(1)
+  summary       Json?
+  error         String?                @db.VarChar(1000)
+  createdAt     DateTime               @default(now())
+
+  @@index([system, createdAt(sort: Desc)])
+  @@index([aggregateType, aggregateId])
+  @@map("integration_event")
+}
+
+/// État de santé partagé entre instances (disjoncteur) des intégrations externes.
+model IntegrationHealth {
+  system              String                  @id @db.VarChar(20)
+  status              IntegrationHealthStatus @default(UNKNOWN)
+  consecutiveFailures Int                     @default(0)
+  circuitOpenUntil    DateTime?
+  lastCheckedAt       DateTime?
+  lastSuccessAt       DateTime?
+  lastFailureAt       DateTime?
+  lastError           String?                 @db.VarChar(1000)
+  apiVersion          String?                 @db.VarChar(20)
+  updatedAt           DateTime                @updatedAt
+
+  @@map("integration_health")
+}
+
+// ─────────────────────────────── Communication ───────────────────────────────
+
+model Conversation {
+  id                 String             @id @default(uuid(7)) @db.Uuid
+  listingId          String             @db.Uuid
+  listing            Listing            @relation(fields: [listingId], references: [id], onDelete: Restrict)
+  buyerId            String
+  buyer              User               @relation("ConversationBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  sellerId           String
+  seller             User               @relation("ConversationSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+  orderId            String?            @db.Uuid
+  order              Order?             @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  status             ConversationStatus @default(OPEN)
+  lastMessageAt      DateTime           @default(now())
+  lastMessagePreview String?            @db.VarChar(140)
+  buyerLastReadAt    DateTime?
+  sellerLastReadAt   DateTime?
+  createdAt          DateTime           @default(now())
+
+  messages Message[]
+
+  @@unique([listingId, buyerId])
+  @@index([buyerId, lastMessageAt(sort: Desc)])
+  @@index([sellerId, lastMessageAt(sort: Desc)])
+  @@map("conversation")
+}
+
+model Message {
+  id             String       @id @default(uuid(7)) @db.Uuid
+  conversationId String       @db.Uuid
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String?
+  sender         User?        @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  kind           MessageKind  @default(TEXT)
+  body           String       @db.VarChar(2000)
+  // Signaux de risque détectés (coordonnées, lien externe, paiement hors plateforme…).
+  riskFlags      String[]
+  isHidden       Boolean      @default(false)
+  hiddenReason   String?      @db.VarChar(300)
+  createdAt      DateTime     @default(now())
+
+  attachments MessageAttachment[]
+
+  @@index([conversationId, createdAt])
+  @@map("message")
+}
+
+model MessageAttachment {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  messageId  String   @db.Uuid
+  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  storageKey String   @unique
+  mimeType   String   @db.VarChar(60)
+  sizeBytes  Int
+  width      Int?
+  height     Int?
+  createdAt  DateTime @default(now())
+
+  @@map("message_attachment")
+}
+
+model Notification {
+  id        String           @id @default(uuid(7)) @db.Uuid
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String           @db.VarChar(160)
+  body      String           @db.VarChar(600)
+  link      String?          @db.VarChar(300)
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, readAt, createdAt(sort: Desc)])
+  @@map("notification")
+}
+
+model NotificationPreference {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel   String   @db.VarChar(16)
+  category  String   @db.VarChar(32)
+  enabled   Boolean
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, channel, category])
+  @@map("notification_preference")
+}
+
+/// Copie des emails émis. Avec EMAIL_PROVIDER=outbox (développement), c'est le seul canal :
+/// aucun email réel n'est envoyé.
+model EmailMessage {
+  id                String   @id @default(uuid(7)) @db.Uuid
+  to                String   @db.VarChar(320)
+  subject           String   @db.VarChar(300)
+  html              String
+  text              String
+  template          String   @db.VarChar(60)
+  provider          String   @db.VarChar(20)
+  providerMessageId String?  @db.VarChar(200)
+  status            String   @db.VarChar(16)
+  error             String?  @db.VarChar(1000)
+  createdAt         DateTime @default(now())
+
+  @@index([to, createdAt(sort: Desc)])
+  @@map("email_message")
+}
+
+// ─────────────────────────────── Confiance ───────────────────────────────
+
+model Review {
+  id            String       @id @default(uuid(7)) @db.Uuid
+  orderId       String       @db.Uuid
+  order         Order        @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  authorId      String
+  author        User         @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  subjectId     String
+  subject       User         @relation("ReviewSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  authorRole    ReviewRole
+  rating        Int
+  comment       String?      @db.VarChar(1000)
+  status        ReviewStatus @default(VISIBLE)
+  replyBody     String?      @db.VarChar(1000)
+  contestedAt   DateTime?
+  contestReason String?      @db.VarChar(1000)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@unique([orderId, authorId])
+  @@index([subjectId, status, createdAt(sort: Desc)])
+  @@map("review")
+}
+
+model Report {
+  id             String           @id @default(uuid(7)) @db.Uuid
+  reporterId     String
+  reporter       User             @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  targetType     ReportTargetType
+  targetId       String           @db.VarChar(80)
+  reason         ReportReason
+  details        String?          @db.VarChar(2000)
+  status         ReportStatus     @default(OPEN)
+  handledById    String?
+  handledAt      DateTime?
+  resolutionNote String?          @db.VarChar(1000)
+  createdAt      DateTime         @default(now())
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+  @@map("report")
+}
+
+model Dispute {
+  id                  String             @id @default(uuid(7)) @db.Uuid
+  orderId             String             @db.Uuid
+  order               Order              @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  openedById          String
+  openedBy            User               @relation("DisputeOpener", fields: [openedById], references: [id], onDelete: Restrict)
+  reason              DisputeReason
+  description         String             @db.VarChar(4000)
+  status              DisputeStatus      @default(OPEN)
+  previousOrderStatus OrderStatus
+  resolution          DisputeResolution?
+  refundAmount        Int?
+  resolutionNote      String?            @db.VarChar(2000)
+  assignedToId        String?
+  assignedTo          User?              @relation("DisputeAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  sellerRespondBy     DateTime?
+  resolvedById        String?
+  resolvedAt          DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  evidence DisputeEvidence[]
+  messages DisputeMessage[]
+
+  @@index([status, createdAt])
+  @@index([orderId])
+  @@map("dispute")
+}
+
+model DisputeEvidence {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  disputeId  String   @db.Uuid
+  dispute    Dispute  @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  uploaderId String
+  storageKey String   @unique
+  mimeType   String   @db.VarChar(60)
+  sizeBytes  Int
+  fileName   String   @db.VarChar(200)
+  createdAt  DateTime @default(now())
+
+  @@index([disputeId])
+  @@map("dispute_evidence")
+}
+
+model DisputeMessage {
+  id         String                   @id @default(uuid(7)) @db.Uuid
+  disputeId  String                   @db.Uuid
+  dispute    Dispute                  @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  authorId   String?
+  authorRole String                   @db.VarChar(16)
+  body       String                   @db.VarChar(4000)
+  visibility DisputeMessageVisibility @default(PARTIES)
+  createdAt  DateTime                 @default(now())
+
+  @@index([disputeId, createdAt])
+  @@map("dispute_message")
+}
+
+// ─────────────────────────────── Administration ───────────────────────────────
+
+model ModerationAction {
+  id         String               @id @default(uuid(7)) @db.Uuid
+  actorId    String
+  targetType String               @db.VarChar(20)
+  targetId   String               @db.VarChar(80)
+  action     ModerationActionType
+  reason     String               @db.VarChar(1000)
+  reportId   String?              @db.Uuid
+  createdAt  DateTime             @default(now())
+
+  @@index([targetType, targetId])
+  @@index([createdAt])
+  @@map("moderation_action")
+}
+
+/// Journal d'audit immuable (UPDATE/DELETE refusés par trigger).
+model AuditLog {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  actorRoles String[]
+  action     String   @db.VarChar(80)
+  targetType String   @db.VarChar(40)
+  targetId   String?  @db.VarChar(80)
+  metadata   Json?
+  ipHash     String?  @db.VarChar(64)
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([targetType, targetId])
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+  @@map("audit_log")
+}
+
+model FeatureFlag {
+  key         String   @id @db.VarChar(80)
+  enabled     Boolean
+  description String   @db.VarChar(500)
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("feature_flag")
+}
+
+model PlatformSetting {
+  key         String   @id @db.VarChar(80)
+  value       Json
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("platform_setting")
+}
+
+/// Clients des API internes (Tamurt HQ, Tamurt Transport) : seule l'empreinte du jeton est stockée.
+model ServiceApiClient {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  name        String    @db.VarChar(120)
+  tokenHash   String    @unique @db.VarChar(64)
+  tokenPrefix String    @db.VarChar(12)
+  scopes      String[]
+  allowedIps  String[]
+  createdById String
+  createdAt   DateTime  @default(now())
+  revokedAt   DateTime?
+  lastUsedAt  DateTime?
+
+  @@map("service_api_client")
+}
+
+/// File de tâches transactionnelle (outbox) : emails, notifications, appels d'intégration.
+/// Une tâche en échec après maxAttempts reste FAILED (équivalent d'une dead-letter queue).
+model Job {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  type        String    @db.VarChar(60)
+  payload     Json
+  status      JobStatus @default(PENDING)
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(6)
+  runAt       DateTime  @default(now())
+  lockedAt    DateTime?
+  lastError   String?   @db.VarChar(2000)
+  dedupeKey   String?   @unique @db.VarChar(200)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status, runAt])
+  @@map("job")
+}
+
+/// Événements produit minimisés (aucune IP, aucun user-agent, aucune donnée de contenu).
+model AnalyticsEvent {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  name       String   @db.VarChar(60)
+  userId     String?
+  properties Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  @@index([name, createdAt])
+  @@index([userId, createdAt])
+  @@map("analytics_event")
+}
+
+/// Limiteur de débit applicatif (fenêtre fixe, partagé entre instances).
+model RateLimitBucket {
+  key         String   @db.VarChar(200)
+  windowStart DateTime
+  count       Int      @default(0)
+
+  @@id([key, windowStart])
+  @@index([windowStart])
+  @@map("rate_limit_bucket")
+}

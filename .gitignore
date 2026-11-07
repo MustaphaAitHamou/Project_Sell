@@ -1,0 +1,35 @@
+# dépendances
+node_modules
+.pnpm-store
+
+# builds
+.next
+.next-e2e
+out
+build
+next-env.d.ts
+*.tsbuildinfo
+
+# client Prisma généré
+generated
+
+# secrets (seul .env.example est versionné)
+.env
+.env.*
+!.env.example
+!.env.test.example
+
+# stockage local (images, pièces jointes de développement)
+storage
+storage-e2e
+
+# tests
+coverage
+playwright-report
+test-results
+blob-report
+
+# divers
+.DS_Store
+*.log
+.vercel

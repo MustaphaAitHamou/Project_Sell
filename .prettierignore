@@ -1,0 +1,10 @@
+.next
+.next-e2e
+generated
+node_modules
+pnpm-lock.yaml
+storage
+storage-e2e
+playwright-report
+test-results
+prisma/migrations
