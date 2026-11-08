@@ -22,6 +22,11 @@ async function main() {
       const { seedDemo } = await import("./seed/demo");
       const r = await seedDemo(db);
       console.log(`✔ Démonstration fictive : ${r.users} comptes, ${r.listingsCreated} annonces créées`);
+      // Démonstration uniquement : versements SIMULÉS autorisés en France (prestataire « sandbox »),
+      // pour montrer le parcours complet jusqu'au versement. Réglage opérationnel : les seeds suivants ne le
+      // modifient plus (il se change en administration, permission « conformité »).
+      await db.country.update({ where: { code: "FR" }, data: { payoutsEnabled: true } });
+      console.log("✔ Versements simulés autorisés pour la France (démonstration)");
       const { seedDemoActivity } = await import("./seed/demo-activity");
       const a = await seedDemoActivity(db);
       console.log(`✔ Activité de démonstration : ${a.summary}`);
