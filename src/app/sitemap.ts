@@ -2,7 +2,8 @@ import type { MetadataRoute } from "next";
 import { env } from "@/lib/env";
 import { db } from "@/server/db/client";
 
-export const revalidate = 3600;
+// Calculé à la demande (aucun accès à la base pendant le build).
+export const dynamic = "force-dynamic";
 
 const STATIC_PAGES = ["", "/explorer", "/categories", "/vendre", "/comment-ca-marche", "/protection-acheteur", "/centre-aide", "/objets-interdits", "/conditions", "/confidentialite", "/mentions-legales", "/contact"];
 

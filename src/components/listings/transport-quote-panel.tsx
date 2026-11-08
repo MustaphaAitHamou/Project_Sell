@@ -32,7 +32,7 @@ export function TransportQuotePanel({ listingId, originCountry }: { listingId: s
         </span>
         <div className="grid gap-0.5">
           <p className="font-semibold">Livraison {COUNTRY_NAMES[originCountry] === "France" ? "vers l'Algérie" : "vers la France"} avec Tamurt Transport</p>
-          <p className="text-sm text-muted-foreground">Estimation par un voyageur effectuant déjà le trajet. Service en préparation : aucune réservation réelle n'est possible à ce jour.</p>
+          <p className="text-sm text-muted-foreground">Estimation par un voyageur effectuant déjà le trajet. Service en préparation : aucune réservation réelle n&apos;est possible à ce jour.</p>
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">

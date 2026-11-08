@@ -2,14 +2,16 @@
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
+
+const subscribeNoop = () => () => {};
 
 export function ThemeToggle({ className }: { className?: string }) {
   const t = useTranslations("common");
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  // Vrai après hydratation uniquement (le thème choisi n'est connu que du navigateur).
+  const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
   const options = [
     { value: "light", label: t("themeLight"), icon: Sun },
     { value: "dark", label: t("themeDark"), icon: Moon },

@@ -1,5 +1,5 @@
 import "server-only";
-import { Prisma } from "@/generated/prisma/client";
+import { type Prisma } from "@/generated/prisma/client";
 import { hasPermission } from "@/lib/domain/permissions";
 import { ORDER_FUNDS_HELD_STATES } from "@/lib/domain/order-state";
 import type { CurrentUser } from "@/server/auth/session";

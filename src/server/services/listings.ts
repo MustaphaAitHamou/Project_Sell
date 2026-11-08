@@ -1,5 +1,5 @@
 import "server-only";
-import { Prisma, type ListingStatus } from "@/generated/prisma/client";
+import { type Prisma, type ListingStatus } from "@/generated/prisma/client";
 import { REVIEW_KEYWORDS } from "@/lib/config/moderation";
 import { listingInputSchema, type ListingInput, type ListingInputParsed } from "@/features/listings/schemas";
 import { generatePublicId, listingPath, listingSlug } from "@/lib/domain/ids";

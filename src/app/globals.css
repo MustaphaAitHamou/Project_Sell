@@ -34,8 +34,8 @@
   --primary-soft: #e2f1ea;
   --primary-soft-foreground: #0c4a37;
 
-  --accent: #c4623a;
-  --accent-hover: #a9512d;
+  --accent: #ad502c;
+  --accent-hover: #93421f;
   --accent-foreground: #ffffff;
   --accent-soft: #fbece4;
   --accent-soft-foreground: #84391b;
@@ -47,7 +47,7 @@
   --success: #1c7d52;
   --success-soft: #e4f3eb;
   --success-soft-foreground: #125a3a;
-  --warning: #a8670f;
+  --warning: #935a0b;
   --warning-soft: #fdf2df;
   --warning-soft-foreground: #7a4a08;
   --info: #22599a;

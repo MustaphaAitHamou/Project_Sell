@@ -8,6 +8,8 @@ export const authClient = createAuthClient({
     twoFactorClient({
       onTwoFactorRedirect() {
         const next = new URLSearchParams(window.location.search).get("next") ?? "/compte";
+        // Hors composant React (rappel du client d'authentification) : navigation complète.
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
         window.location.href = `/connexion/2fa?next=${encodeURIComponent(next)}`;
       },
     }),

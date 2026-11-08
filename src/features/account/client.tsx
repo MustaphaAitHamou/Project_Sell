@@ -230,6 +230,8 @@ export function DeleteAccount() {
             const res = await deleteAccountAction({ confirm: "SUPPRIMER" });
             if (!res.ok) return void toast.error(res.error);
             await authClient.signOut().catch(() => undefined);
+            // Rechargement complet volontaire : réinitialise tout l'état client après suppression.
+            // eslint-disable-next-line @next/next/no-location-assign-relative-destination
             window.location.href = "/";
           })
         }

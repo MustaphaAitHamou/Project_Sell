@@ -15,7 +15,7 @@ async function deliveredOrder(price = 2490) {
   const listing = await makeListing(seller, { price });
   const { orderId } = await createOrder(buyer, { listingId: listing.id, deliveryMethod: "HAND_DELIVERY", idempotencyKey: crypto.randomUUID() });
   await paySandbox(orderId);
-  await confirmHandover(seller, orderId, await getHandoverCode(buyer, orderId));
+  await confirmHandover(seller, orderId, (await getHandoverCode(buyer, orderId))!);
   return { seller, buyer, listing, orderId };
 }
 

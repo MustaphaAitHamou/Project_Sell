@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { AdminTable } from "@/features/admin/table";
 import { Link } from "@/i18n/navigation";
 import { formatMoney } from "@/lib/domain/money";
+import { nowMs } from "@/lib/time";
 import { requirePermissionPage } from "@/server/auth/session";
 import { DISPUTE_REASONS, listDisputesForStaff } from "@/server/services/disputes";
 
@@ -18,7 +19,7 @@ export default async function AdminDisputesPage({ searchParams }: { searchParams
   const { statut } = await searchParams;
   const status = statut && (statut === "ALL" || statut in DISPUTE_STATUS) ? statut : undefined;
   const disputes = await listDisputesForStaff(status);
-  const now = Date.now();
+  const now = nowMs();
   return (
     <>
       <PageHeader title="Litiges" description="Les plus anciens d'abord. Les décisions sont motivées et notifiées aux deux parties." />

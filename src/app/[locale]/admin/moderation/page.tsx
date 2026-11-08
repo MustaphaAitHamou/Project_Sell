@@ -87,7 +87,6 @@ export default async function ModerationPage() {
                       <div className="flex flex-wrap items-start gap-3">
                         <div className="flex gap-1.5">
                           {l.images.map((img) => (
-                            // eslint-disable-next-line @next/next/no-img-element
                             <img key={img.id} src={imageUrl(img.id)} alt="" width={64} height={64} className="size-16 rounded-md border border-border object-cover" />
                           ))}
                         </div>

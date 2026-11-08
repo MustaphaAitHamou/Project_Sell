@@ -2,7 +2,7 @@ import "server-only";
 import type { OrderStatus, Prisma } from "@/generated/prisma/client";
 import { assertOrderTransition, type OrderActor } from "@/lib/domain/order-state";
 import { track } from "@/server/analytics";
-import { db, type Tx } from "@/server/db/client";
+import { type db, type Tx } from "@/server/db/client";
 import { enqueue } from "@/server/jobs/queue";
 import { notify } from "@/server/notifications";
 import { hashScopedCode, randomToken } from "@/server/security/crypto";

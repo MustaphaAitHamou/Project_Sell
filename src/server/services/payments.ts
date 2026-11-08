@@ -177,7 +177,7 @@ async function onPaymentSucceeded(providerCode: string, event: Extract<Normalize
     }
 
     const p = order.pricing!;
-    let ref = await transitionOrder(tx, order, "PAID", SYSTEM, { reason: "Paiement confirmé par webhook signé", data: { paidAt: new Date() } });
+    const ref = await transitionOrder(tx, order, "PAID", SYSTEM, { reason: "Paiement confirmé par webhook signé", data: { paidAt: new Date() } });
     await postLedger(tx, {
       orderId: order.id,
       kind: "PAYMENT_CAPTURED",
@@ -192,7 +192,7 @@ async function onPaymentSucceeded(providerCode: string, event: Extract<Normalize
     // L'article est vendu dès le paiement (un exemplaire unique ne peut plus être acheté).
     await tx.$executeRaw`UPDATE "listing" SET "status" = 'SOLD'::"ListingStatus", "soldAt" = now(), "version" = "version" + 1, "updatedAt" = now() WHERE "id" = ${order.listingId}::uuid AND "quantityAvailable" = 0 AND "status" = 'RESERVED'`;
 
-    ref = await transitionOrder(tx, ref, "SHIPPING_PENDING", SYSTEM, {
+    await transitionOrder(tx, ref, "SHIPPING_PENDING", SYSTEM, {
       reason: order.deliveryMethod === "HAND_DELIVERY" ? "En attente de remise en main propre" : "En attente d'expédition",
       data: order.deliveryMethod === "HAND_DELIVERY" ? { handoverSalt: newHandoverSalt() } : undefined,
     });

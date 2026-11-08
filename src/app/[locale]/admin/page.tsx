@@ -12,8 +12,9 @@ export const metadata = { title: "Tableau de bord" };
 
 const DELIVERY_LABELS: Record<string, string> = { HAND_DELIVERY: "Remise en main propre", NATIONAL_SHIPPING: "Livraison nationale", TAMURT_TRANSPORT: "Tamurt Transport" };
 
-export default async function AdminDashboard() {
+export default async function AdminDashboard({ searchParams }: { searchParams: Promise<{ erreur?: string }> }) {
   const staff = await requirePermissionPage("admin.access");
+  const { erreur } = await searchParams;
   const stats = await getDashboardStats(30);
   const t = await getTranslations("orderStatus");
   const showFinance = can(staff, "stats.read");
@@ -32,6 +33,11 @@ export default async function AdminDashboard() {
   return (
     <>
       <PageHeader title="Tableau de bord" description="Activité des 30 derniers jours et files de traitement." />
+      {erreur === "permission" ? (
+        <Alert tone="danger" title="Accès refusé">
+          Votre rôle ne donne pas accès à cette section. Les droits financiers et de configuration sont réservés aux rôles Finance et Administration.
+        </Alert>
+      ) : null}
       {usesSimulators ? (
         <Alert tone="warning" title="Environnement de simulation">
           Les paiements, versements et expéditions de cet environnement sont simulés : aucun montant affiché ne correspond à de l&apos;argent réel.

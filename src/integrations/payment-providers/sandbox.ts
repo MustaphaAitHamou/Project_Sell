@@ -31,7 +31,7 @@ export const sandboxProvider: PaymentProvider = {
   isSandbox: true,
   capabilities: { payerCountries: ["FR"], currencies: ["EUR"], payoutCountries: ["FR"], delayedPayouts: true, partialRefunds: true, webhooks: true },
 
-  async createPayment(a) {
+  async createPayment() {
     const providerSessionId = `sbx_cs_${crypto.randomUUID().replace(/-/g, "")}`;
     return { providerSessionId, redirectUrl: `/dev/paiement/${providerSessionId}` };
   },

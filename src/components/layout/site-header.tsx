@@ -27,7 +27,7 @@ export async function SiteHeader({ user, query }: { user: CurrentUser | null; qu
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
       <div className="container-page flex h-16 items-center gap-3 md:gap-6">
-        <Link href="/" className="shrink-0 rounded-lg" aria-label="Tamurt Market — accueil">
+        <Link href="/" className="shrink-0 rounded-lg" aria-label="Tamurt Market, accueil">
           <Logo />
         </Link>
         <div className="hidden flex-1 md:block">

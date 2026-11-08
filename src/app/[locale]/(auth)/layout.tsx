@@ -8,7 +8,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="flex min-h-dvh flex-col bg-[radial-gradient(900px_420px_at_50%_-10%,var(--primary-soft),transparent_70%)]">
       {usesSimulators ? <EnvironmentBanner /> : null}
       <header className="container-page flex h-16 items-center">
-        <Link href="/" aria-label="Tamurt Market — accueil">
+        <Link href="/" aria-label="Tamurt Market, accueil">
           <Logo />
         </Link>
       </header>

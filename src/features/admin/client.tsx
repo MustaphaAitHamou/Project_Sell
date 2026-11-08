@@ -392,7 +392,7 @@ export function ComplianceRuleControl({ id, status, crossBorder, canWrite }: { i
 
 export function ComplianceRecordForm() {
   const { pending, run } = useRun();
-  const [v, setV] = useState({ subjectType: "CORRIDOR" as "CORRIDOR", subjectRef: "", title: "", validatedBy: "", documentRef: "" });
+  const [v, setV] = useState({ subjectType: "CORRIDOR" as const, subjectRef: "", title: "", validatedBy: "", documentRef: "" });
   const set = (k: keyof typeof v) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setV({ ...v, [k]: e.target.value });
   return (
     <form

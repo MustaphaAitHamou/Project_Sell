@@ -33,11 +33,17 @@ export function FavoriteButton({
       router.push(`/connexion?next=${encodeURIComponent(window.location.pathname)}`);
       return;
     }
+    const previous = favorited;
     start(async () => {
-      setFavorited(!favorited);
+      setFavorited(!previous);
       const res = await toggleFavoriteAction({ listingId });
-      if (!res.ok) toast.error(res.error);
-      else toast.success(res.data.favorited ? t("favoriteAdded") : t("favoriteRemoved"));
+      if (!res.ok) {
+        setFavorited(previous); // affichage optimiste annulé : l'état reste celui du serveur
+        toast.error(res.error);
+        return;
+      }
+      setFavorited(res.data.favorited);
+      toast.success(res.data.favorited ? t("favoriteAdded") : t("favoriteRemoved"));
       router.refresh();
     });
   };

@@ -37,7 +37,12 @@ export function SearchBar({ defaultValue = "", className, autoFocus }: { default
   const listId = useId();
   const ref = useRef<HTMLFormElement>(null);
 
-  useEffect(() => setValue(defaultValue), [defaultValue]);
+  // Synchronisation avec l'URL (navigation) : état dérivé ajusté pendant le rendu.
+  const [syncedDefault, setSyncedDefault] = useState(defaultValue);
+  if (syncedDefault !== defaultValue) {
+    setSyncedDefault(defaultValue);
+    setValue(defaultValue);
+  }
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);

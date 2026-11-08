@@ -128,7 +128,7 @@ describe("Remise en main propre jusqu'au versement", () => {
     await paySandbox(orderId);
     // Le code n'est accessible qu'à l'acheteur.
     await expect(getHandoverCode(seller, orderId)).rejects.toBeTruthy();
-    const code = await getHandoverCode(buyer, orderId);
+    const code = (await getHandoverCode(buyer, orderId))!;
     expect(code).toMatch(/^\d{6}$/);
     await expect(confirmHandover(seller, orderId, code === "000000" ? "111111" : "000000")).rejects.toMatchObject({ code: "VALIDATION" });
     await confirmHandover(seller, orderId, code);

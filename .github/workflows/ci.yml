@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualite:
+    name: Qualité, tests et build
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      # Valeurs de test uniquement (aucun secret réel) ; bases dédiées créées par les tests.
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tamurt_market_test?schema=public
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tamurt_market_test?schema=public
+      E2E_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tamurt_market_e2e?schema=public
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Installation (lockfile figé)
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit des dépendances (vulnérabilités élevées)
+        run: pnpm audit --prod --audit-level=high
+
+      - name: Configuration de test
+        run: cp .env.test.example .env
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Vérification TypeScript
+        run: pnpm typecheck
+
+      - name: Tests unitaires
+        run: pnpm test:unit
+
+      - name: Migrations sur base vierge + tests d'intégration
+        run: pnpm test:integration
+
+      - name: Vérification du schéma (base migrée ⇔ schema.prisma)
+        run: pnpm db:drift
+
+      - name: Spécifications OpenAPI à jour
+        run: pnpm openapi && git diff --exit-code docs/openapi
+
+      - name: Build de production
+        run: pnpm build
+
+      - name: Navigateur Playwright
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Tests de bout en bout (scénarios 1 à 10, accessibilité, mobile)
+        run: pnpm test:e2e
+
+      - name: Rapport Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, PageHeader } from "@/components/ui/misc";
 import { FunnelChart } from "@/features/admin/funnel-chart";
 import { AdminTable } from "@/features/admin/table";
+import { daysAgo } from "@/lib/time";
 import { requirePermissionPage } from "@/server/auth/session";
 import { db } from "@/server/db/client";
 import { getFunnels } from "@/server/services/admin-stats";
@@ -23,7 +24,7 @@ const EVENT_LABELS: Record<string, string> = {
 
 export default async function AdminStatsPage() {
   await requirePermissionPage("stats.read");
-  const since = new Date(Date.now() - 30 * 86_400_000);
+  const since = daysAgo(30);
   const [funnels, events, noResults] = await Promise.all([
     getFunnels(90),
     db.analyticsEvent.groupBy({ by: ["name"], where: { createdAt: { gte: since } }, _count: true, orderBy: { _count: { name: "desc" } } }),
