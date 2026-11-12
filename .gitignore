@@ -21,8 +21,8 @@ generated
 !.env.test.example
 
 # stockage local (images, pièces jointes de développement)
-storage
-storage-e2e
+/storage/
+/storage-e2e/
 
 # tests
 coverage
@@ -34,4 +34,4 @@ blob-report
 .DS_Store
 *.log
 .vercel
-storage-test
+/storage-test/
