@@ -168,7 +168,7 @@ export default async function ProductPage({ params }: Props) {
                 .filter((m) => listing.deliveryMethods.includes(m.method))
                 .map((m) => (
                   <li key={m.method} className="flex items-start gap-3 rounded-xl border border-border bg-card p-3 text-sm">
-                    <Truck className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                    <Truck className="mt-0.5 size-4 shrink-0 text-primary-text" aria-hidden />
                     <div className="grid gap-0.5">
                       <p className="font-semibold">
                         {t(`delivery.${m.method}`)}
@@ -254,7 +254,7 @@ export default async function ProductPage({ params }: Props) {
             {!isOwner && !unavailable ? (
               canBuy ? (
                 <div className="flex gap-3 rounded-xl border border-primary/20 bg-primary-soft/50 p-3 text-sm">
-                  <ShieldCheck className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
+                  <ShieldCheck className="mt-0.5 size-5 shrink-0 text-primary-text" aria-hidden />
                   <div>
                     <p className="font-semibold">{t("listing.protectionTitle")}</p>
                     <p className="text-muted-foreground">{t("listing.protectionText")}</p>

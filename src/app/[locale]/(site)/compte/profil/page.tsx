@@ -15,7 +15,7 @@ export default async function ProfilePage() {
   const regionsByCountry = Object.fromEntries(await Promise.all(countries.map(async (c) => [c.code, await getRegions(c.code)] as const)));
   return (
     <>
-      <PageHeader title="Profil public" description="Ces informations sont visibles par tous. Vos coordonnées restent privées." actions={<Link href={`/vendeur/${p.handle}`} className="text-sm font-semibold text-primary hover:underline">Voir mon profil</Link>} />
+      <PageHeader title="Profil public" description="Ces informations sont visibles par tous. Vos coordonnées restent privées." actions={<Link href={`/vendeur/${p.handle}`} className="text-sm font-semibold text-primary-text hover:underline">Voir mon profil</Link>} />
       <Card className="p-5">
         <ProfileForm
           initial={{ displayName: p.displayName, handle: p.handle, bio: p.bio ?? "", countryCode: p.countryCode ?? "FR", regionId: p.regionId ?? "", cityName: p.cityName ?? "" }}

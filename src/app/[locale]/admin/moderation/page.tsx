@@ -99,7 +99,7 @@ export default async function ModerationPage() {
                           </p>
                           <p className="text-sm">
                             Vendeur :{" "}
-                            <Link href={`/admin/utilisateurs?u=${l.sellerId}`} className="font-medium text-primary hover:underline">
+                            <Link href={`/admin/utilisateurs?u=${l.sellerId}`} className="font-medium text-primary-text hover:underline">
                               {l.seller.profile?.displayName ?? "—"}
                             </Link>{" "}
                             <span className="text-muted-foreground">

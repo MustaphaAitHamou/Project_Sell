@@ -30,7 +30,7 @@ export async function OrderList({ rows, as, highlight }: { rows: Row[]; as: "buy
       {rows.map((o) => (
         <li key={o.id}>
           <Link href={`/commande/${o.id}`} className="block">
-            <Card className={`flex items-center gap-3 p-3 transition-shadow hover:shadow-[var(--shadow-lift)] ${highlight === o.id ? "ring-2 ring-primary" : ""}`}>
+            <Card className={`flex items-center gap-3 p-3 transition-shadow hover:shadow-[var(--shadow-lift)] ${highlight === o.id ? "ring-2 ring-primary-text" : ""}`}>
               <div className="size-14 shrink-0 overflow-hidden rounded-lg bg-muted">{o.items[0]?.imageKey ? <img src={imageUrl(o.items[0].imageKey, "thumb")} alt="" className="size-full object-cover" loading="lazy" /> : <ImageOff className="m-auto mt-4 size-5 text-muted-foreground" aria-hidden />}</div>
               <div className="grid min-w-0 flex-1 gap-0.5">
                 <p className="truncate font-semibold">{o.items[0]?.title}</p>

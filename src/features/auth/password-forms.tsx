@@ -137,7 +137,7 @@ export function TwoFactorForm({ next }: { next: string }) {
       <Button type="submit" size="lg" loading={pending}>
         {t("verifyCta")}
       </Button>
-      <button type="button" className="text-sm font-medium text-primary hover:underline" onClick={() => setBackup((b) => !b)}>
+      <button type="button" className="text-sm font-medium text-primary-text hover:underline" onClick={() => setBackup((b) => !b)}>
         {backup ? "Utiliser l'application d'authentification" : t("twoFactorBackup")}
       </button>
     </form>

@@ -18,7 +18,7 @@ export default async function SignUpPage() {
       footer={
         <>
           {t("hasAccount")}{" "}
-          <Link href="/connexion" className="font-semibold text-primary hover:underline">
+          <Link href="/connexion" className="font-semibold text-primary-text hover:underline">
             {t("signInCta")}
           </Link>
         </>

@@ -102,7 +102,7 @@ export default async function AdminPaymentsPage() {
           head={["Commande", "Vendeur", "Montant", "Statut", "Motif", "Créé", canPayouts ? "Action" : ""]}
           empty="Aucun versement en attente."
           rows={payouts.map((p) => [
-            <Link key="o" href={`/admin/commandes?o=${p.order.id}`} className="font-mono text-primary hover:underline">
+            <Link key="o" href={`/admin/commandes?o=${p.order.id}`} className="font-mono text-primary-text hover:underline">
               {p.order.reference}
             </Link>,
             p.seller.profile?.displayName ?? "—",
@@ -129,7 +129,7 @@ export default async function AdminPaymentsPage() {
             {payments.length === 0 ? <p className="text-muted-foreground">Aucun paiement.</p> : null}
             {payments.map((p) => (
               <p key={p.id} className="flex flex-wrap justify-between gap-2">
-                <Link href={`/admin/commandes?o=${p.order.id}`} className="font-mono text-primary hover:underline">
+                <Link href={`/admin/commandes?o=${p.order.id}`} className="font-mono text-primary-text hover:underline">
                   {p.order.reference}
                 </Link>
                 <span>
@@ -149,7 +149,7 @@ export default async function AdminPaymentsPage() {
             {refunds.length === 0 ? <p className="text-muted-foreground">Aucun remboursement.</p> : null}
             {refunds.map((r) => (
               <p key={r.id} className="flex flex-wrap justify-between gap-2">
-                <Link href={`/admin/commandes?o=${r.order.id}`} className="font-mono text-primary hover:underline">
+                <Link href={`/admin/commandes?o=${r.order.id}`} className="font-mono text-primary-text hover:underline">
                   {r.order.reference}
                 </Link>
                 <span>

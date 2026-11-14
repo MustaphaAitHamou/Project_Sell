@@ -11,7 +11,7 @@ export function Rating({ sum, count, className, showCount = true, label }: { sum
       <span className="sr-only">{label}</span>
       <span className="flex" aria-hidden>
         {[1, 2, 3, 4, 5].map((i) => (
-          <Star key={i} className={cn("size-3.5", i <= rounded ? "fill-accent text-accent" : i - 0.5 === rounded ? "fill-accent/50 text-accent" : "text-border-strong")} />
+          <Star key={i} className={cn("size-3.5", i <= rounded ? "fill-rating text-rating" : i - 0.5 === rounded ? "fill-rating/50 text-rating" : "text-border-strong")} />
         ))}
       </span>
       <span className="font-semibold tabular-nums" aria-hidden>

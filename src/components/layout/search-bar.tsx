@@ -99,7 +99,7 @@ export function SearchBar({ defaultValue = "", className, autoFocus }: { default
             <p className="text-xs font-semibold text-muted-foreground">{t("search.recent")}</p>
             <button
               type="button"
-              className="text-xs font-medium text-primary hover:underline"
+              className="text-xs font-medium text-primary-text hover:underline"
               onClick={() => {
                 try {
                   localStorage.removeItem(STORAGE_KEY);

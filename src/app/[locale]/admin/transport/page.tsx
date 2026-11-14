@@ -66,7 +66,7 @@ export default async function AdminTransportPage() {
           rows={reservations.map((r) => [
             dateFmt.format(r.createdAt),
             r.order ? (
-              <Link key="o" href={`/admin/commandes?o=${r.order.id}`} className="font-mono text-primary hover:underline">
+              <Link key="o" href={`/admin/commandes?o=${r.order.id}`} className="font-mono text-primary-text hover:underline">
                 {r.order.reference}
               </Link>
             ) : (

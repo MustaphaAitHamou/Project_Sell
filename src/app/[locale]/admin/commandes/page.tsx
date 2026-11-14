@@ -96,10 +96,10 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
               </p>
             </div>
             <div className="flex gap-3 text-sm">
-              <Link href={`/commande/${selected.id}`} className="font-medium text-primary hover:underline">
+              <Link href={`/commande/${selected.id}`} className="font-medium text-primary-text hover:underline">
                 Vue commande
               </Link>
-              <Link href={qs(page)} className="font-medium text-primary hover:underline">
+              <Link href={qs(page)} className="font-medium text-primary-text hover:underline">
                 Fermer
               </Link>
             </div>
@@ -205,7 +205,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
         head={["Référence", "Article", "Acheteur", "Vendeur", "Statut", "Total", "Livraison", "Créée"]}
         empty="Aucune commande."
         rows={orders.map((o) => [
-          <Link key="r" href={qs(page, o.id)} className="font-mono font-medium text-primary hover:underline">
+          <Link key="r" href={qs(page, o.id)} className="font-mono font-medium text-primary-text hover:underline">
             {o.reference}
             {o.isSimulated ? <span className="block font-sans text-[11px] text-warning">simulation</span> : null}
           </Link>,

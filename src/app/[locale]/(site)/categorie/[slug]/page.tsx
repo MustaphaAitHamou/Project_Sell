@@ -47,7 +47,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                 {children.map((c) => (
                   <li key={c.id} className="shrink-0">
                     <Link href={`/categorie/${c.slug}`} className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium hover:bg-muted">
-                      <CategoryIcon name={c.icon} className="size-4 text-primary" /> {c.name}
+                      <CategoryIcon name={c.icon} className="size-4 text-primary-text" /> {c.name}
                     </Link>
                   </li>
                 ))}

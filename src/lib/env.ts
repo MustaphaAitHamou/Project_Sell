@@ -65,6 +65,8 @@ const schema = z
     ADMIN_REQUIRE_2FA: bool,
     LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
     SENTRY_DSN: z.string().optional(),
+    /** Adresse de Tamurt Services (la maison mère) : active le bouton yaz en haut à droite. Vide : pas de bouton. */
+    TAMURT_SERVICES_URL: z.union([z.url(), z.literal("")]).optional(),
   })
   .superRefine((v, ctx) => {
     const req = (cond: boolean, keys: string[], why: string) => {

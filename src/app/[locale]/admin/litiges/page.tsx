@@ -43,7 +43,7 @@ export default async function AdminDisputesPage({ searchParams }: { searchParams
         <AdminTable
           head={["Commande", "Motif", "Ouvert par", "Statut", "Montant", "Ouvert le", "Échéance vendeur"]}
           rows={disputes.map((d) => [
-            <Link key="r" href={`/admin/litiges/${d.id}`} className="font-mono font-medium text-primary hover:underline">
+            <Link key="r" href={`/admin/litiges/${d.id}`} className="font-mono font-medium text-primary-text hover:underline">
               {d.order.reference}
               {d.order.isSimulated ? <span className="block font-sans text-[11px] text-warning">simulation</span> : null}
             </Link>,

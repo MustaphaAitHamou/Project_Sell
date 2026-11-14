@@ -54,7 +54,7 @@ export function SignInForm({ next, googleEnabled }: { next?: string; googleEnabl
         <Input id="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
       </Field>
       <div className="-mt-2 text-end text-sm">
-        <Link href="/mot-de-passe-oublie" className="font-medium text-primary hover:underline">
+        <Link href="/mot-de-passe-oublie" className="font-medium text-primary-text hover:underline">
           {t("forgot")}
         </Link>
       </div>

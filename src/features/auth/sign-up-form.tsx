@@ -61,12 +61,12 @@ export function SignUpForm({ googleEnabled }: { googleEnabled: boolean }) {
           <span>
             {t.rich("acceptTerms", {
               terms: (chunks) => (
-                <Link href="/conditions" className="font-medium text-primary underline" target="_blank">
+                <Link href="/conditions" className="font-medium text-primary-text underline" target="_blank">
                   {chunks}
                 </Link>
               ),
               privacy: (chunks) => (
-                <Link href="/confidentialite" className="font-medium text-primary underline" target="_blank">
+                <Link href="/confidentialite" className="font-medium text-primary-text underline" target="_blank">
                   {chunks}
                 </Link>
               ),

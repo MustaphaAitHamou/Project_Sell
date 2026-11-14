@@ -25,7 +25,7 @@ export function MobileTabBar({ unread, signedIn }: { unread: number; signedIn: b
               <Link
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
-                className={cn("relative flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium", active ? "text-primary" : "text-muted-foreground")}
+                className={cn("relative flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium", active ? "text-primary-text" : "text-muted-foreground")}
               >
                 {tab.primary ? (
                   <span className="grid size-10 place-items-center rounded-full bg-primary text-primary-foreground shadow-md">

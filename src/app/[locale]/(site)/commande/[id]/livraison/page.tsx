@@ -37,7 +37,7 @@ export default async function TrackingPage({ params }: { params: Promise<{ id: s
   const reservation = order.transportReservations.at(-1);
   return (
     <div className="container-page grid max-w-3xl gap-6 py-6 md:py-10">
-      <PageHeader title="Suivi de livraison" description={`Commande ${order.reference}`} actions={<Link href={`/commande/${order.id}`} className="text-sm font-semibold text-primary hover:underline">Retour à la commande</Link>} />
+      <PageHeader title="Suivi de livraison" description={`Commande ${order.reference}`} actions={<Link href={`/commande/${order.id}`} className="text-sm font-semibold text-primary-text hover:underline">Retour à la commande</Link>} />
       {reservation ? (
         <Card className="grid gap-1 p-4 text-sm">
           <p className="flex items-center gap-2 font-semibold">

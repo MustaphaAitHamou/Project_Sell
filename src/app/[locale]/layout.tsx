@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
@@ -8,15 +8,17 @@ import { Providers } from "@/components/providers";
 import { isRtl, routing } from "@/i18n/routing";
 import { env } from "@/lib/env";
 
-const body = Plus_Jakarta_Sans({ subsets: ["latin", "latin-ext"], variable: "--font-body", display: "swap" });
+// Montserrat, la police de Tamurt Market : franche et commerçante, celle des enseignes et des étiquettes de prix.
+// Elle couvre aussi les lettres kabyles (ɛ, ɣ, ḍ…).
+const body = Montserrat({ subsets: ["latin", "latin-ext"], variable: "--font-body", display: "swap" });
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f8faf8" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f1512" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f5f2" },
+    { media: "(prefers-color-scheme: dark)", color: "#141312" },
   ],
 };
 

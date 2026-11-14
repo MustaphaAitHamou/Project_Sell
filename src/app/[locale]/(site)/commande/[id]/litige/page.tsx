@@ -28,7 +28,7 @@ export default async function DisputePage({ params }: { params: Promise<{ id: st
   const canOpen = role === "BUYER" && !dispute?.status.match(/^(OPEN|AWAITING_SELLER|AWAITING_BUYER|UNDER_REVIEW)$/) && (ORDER_DISPUTABLE_STATES as readonly string[]).includes(order.status);
   return (
     <div className="container-page grid max-w-3xl gap-6 py-6 md:py-10">
-      <PageHeader title="Litige" description={`Commande ${order.reference}`} actions={<Link href={`/commande/${order.id}`} className="text-sm font-semibold text-primary hover:underline">Retour à la commande</Link>} />
+      <PageHeader title="Litige" description={`Commande ${order.reference}`} actions={<Link href={`/commande/${order.id}`} className="text-sm font-semibold text-primary-text hover:underline">Retour à la commande</Link>} />
       <Alert tone="info" title="Protection acheteur Tamurt Market">
         Cette procédure commerciale s&apos;ajoute à vos droits légaux de consommateur (garantie légale de conformité auprès d&apos;un vendeur professionnel, par exemple) et ne les remplace pas. Les échanges et preuves sont accessibles uniquement aux parties et à l&apos;équipe support.
       </Alert>

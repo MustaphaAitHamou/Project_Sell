@@ -168,7 +168,7 @@ export function ListingWizard(props: Props) {
               if (e.dataTransfer.files.length) void addFiles(e.dataTransfer.files);
             }}
           >
-            <ImagePlus className="size-8 text-primary" aria-hidden />
+            <ImagePlus className="size-8 text-primary-text" aria-hidden />
             <div>
               <p className="font-semibold">Ajoutez vos photos</p>
               <p className="text-sm text-muted-foreground">Glissez-déposez ou choisissez jusqu&apos;à {MAX_LISTING_IMAGES} photos (JPEG, PNG, WebP). Les métadonnées de localisation sont supprimées.</p>

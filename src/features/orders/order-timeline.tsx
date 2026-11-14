@@ -22,7 +22,7 @@ export function OrderTimeline({ status, handDelivery }: { status: string; handDe
         const done = rank >= r;
         return (
           <li key={s.key} className="flex items-center gap-2 sm:flex-1">
-            <span className={cn("grid size-7 shrink-0 place-items-center rounded-full border-2 text-xs font-bold", done ? "border-primary bg-primary text-primary-foreground" : "border-border-strong text-muted-foreground")}>
+            <span className={cn("grid size-7 shrink-0 place-items-center rounded-full border-2 text-xs font-bold", done ? "border-primary-text bg-primary text-primary-foreground" : "border-border-strong text-muted-foreground")}>
               {done ? <Check className="size-4" aria-hidden /> : i + 1}
             </span>
             <span className={cn("text-sm", done ? "font-semibold" : "text-muted-foreground")}>{s.label}</span>

@@ -4,6 +4,13 @@ Marketplace C2C/B2C de l'écosystème **Tamurt Services** (France, Algérie, dia
 
 > **État réel (novembre 2026)** — Application fonctionnelle de bout en bout **en environnement de développement et de test**, avec des données persistées dans PostgreSQL. Les paiements, versements, étiquettes de livraison et Tamurt Transport sont **simulés** : aucune transaction réelle n'est possible. Aucun déploiement public n'a été effectué. Les textes juridiques sont des modèles **à faire valider** par des professionnels.
 
+## Identité visuelle
+Tamurt Market suit la DA de la famille **Tamurt Services** (slogan : « Le marché dans la poche ») :
+- **Couleur** : jaune miel `#f6a609` en aplat avec un texte encre `#2b1d00`. Le texte de marque passe en ocre `#8a5300` (`#f8ba3c` en sombre), car le miel n'est pas lisible en texte sur fond clair. Les neutres chauds sont communs à la famille ; la terre cuite reste en accent ponctuel ; le rouge Tamurt est réservé au bouton yaz.
+- **Police** : Montserrat pour tout, titres en 800, boutons en 700.
+- **Formes** : boutons à coins de 12 px avec liseré ocre, champs et puces à 10 px, cartes à 14 px, frise « damier » sous l'accueil.
+- **Fichiers** : logos dans `public/brand`, icônes PWA dans `public/icons`, `src/app/icon.svg` et `src/app/apple-icon.png` ; jetons dans `src/app/globals.css`. Décision : ADR-020 (docs/DECISIONS.md).
+
 ## Ce qui fonctionne (vérifié par des tests)
 
 | Domaine | État | Détail |

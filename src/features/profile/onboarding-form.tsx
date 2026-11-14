@@ -53,11 +53,11 @@ export function OnboardingForm({
           <Checkbox className="mt-0.5" checked={v.acceptTerms} onChange={(e) => setV({ ...v, acceptTerms: e.target.checked })} />
           <span>
             J&apos;accepte les{" "}
-            <Link href="/conditions" className="font-medium text-primary underline" target="_blank">
+            <Link href="/conditions" className="font-medium text-primary-text underline" target="_blank">
               conditions générales
             </Link>{" "}
             et la{" "}
-            <Link href="/confidentialite" className="font-medium text-primary underline" target="_blank">
+            <Link href="/confidentialite" className="font-medium text-primary-text underline" target="_blank">
               politique de confidentialité
             </Link>
             .

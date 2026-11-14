@@ -60,7 +60,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
                   </span>
                 }
                 hint={
-                  <span className="inline-flex items-center gap-1 text-primary group-hover:underline">
+                  <span className="inline-flex items-center gap-1 text-primary-text group-hover:underline">
                     Ouvrir <ArrowRight className="size-3" aria-hidden />
                   </span>
                 }

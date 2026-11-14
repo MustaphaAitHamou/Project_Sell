@@ -29,7 +29,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   return (
     <div className="grid gap-14 pb-8">
-      <section className="relative overflow-hidden border-b border-border bg-[radial-gradient(1200px_500px_at_10%_-10%,var(--primary-soft),transparent_60%),radial-gradient(900px_400px_at_100%_0%,var(--accent-soft),transparent_55%)]">
+      <section className="relative overflow-hidden bg-[radial-gradient(1200px_500px_at_10%_-10%,var(--primary-soft),transparent_60%),radial-gradient(900px_400px_at_100%_0%,var(--accent-soft),transparent_55%)]">
         <div className="container-page grid gap-8 py-12 md:py-20 lg:grid-cols-[1.25fr_1fr] lg:items-center">
           <div className="grid gap-6 animate-rise">
             <h1 className="max-w-2xl text-3xl leading-tight font-extrabold sm:text-4xl md:text-5xl">{t("heroTitle")}</h1>
@@ -64,6 +64,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             ))}
           </ul>
         </div>
+        {/* Frise Market « damier » sous le bandeau d'accueil (une par écran). */}
+        <div className="frise" aria-hidden />
       </section>
 
       <section className="container-page grid gap-5" aria-labelledby="cats">
@@ -71,7 +73,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <h2 id="cats" className="text-xl font-bold sm:text-2xl">
             {t("popularCategories")}
           </h2>
-          <Link href="/categories" className="text-sm font-semibold text-primary hover:underline">
+          <Link href="/categories" className="text-sm font-semibold text-primary-text hover:underline">
             Toutes les catégories
           </Link>
         </div>
@@ -94,7 +96,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <h2 id="latest" className="text-xl font-bold sm:text-2xl">
             {t("latest")}
           </h2>
-          <Link href="/explorer?tri=recent" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+          <Link href="/explorer?tri=recent" className="inline-flex items-center gap-1 text-sm font-semibold text-primary-text hover:underline">
             Voir tout <ArrowRight className="size-4 rtl:rotate-180" aria-hidden />
           </Link>
         </div>
@@ -128,7 +130,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <div key={block.title} className="grid content-start gap-4">
             <div className="flex items-end justify-between">
               <h2 className="text-lg font-bold">{block.title}</h2>
-              <Link href={block.href} className="text-sm font-semibold text-primary hover:underline">
+              <Link href={block.href} className="text-sm font-semibold text-primary-text hover:underline">
                 Voir tout
               </Link>
             </div>
@@ -153,12 +155,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       </section>
 
       <section className="container-page">
-        <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-border bg-card p-6 sm:flex-row sm:items-center sm:p-8">
+        {/* Bandeau de marque, identique dans les deux thèmes : dégradé miel, texte encre (≥ 6,7:1), bouton inversé. */}
+        <div className="flex flex-col items-start justify-between gap-4 rounded-2xl bg-[image:var(--brand-gradient)] p-6 text-brand-ink sm:flex-row sm:items-center sm:p-8">
           <div className="grid gap-1">
-            <h2 className="text-xl font-bold">{t("sellTitle")}</h2>
-            <p className="text-muted-foreground">{t("sellText")}</p>
+            <h2 className="text-xl font-extrabold">{t("sellTitle")}</h2>
+            <p>{t("sellText")}</p>
           </div>
-          <Link href="/vendre/nouvelle-annonce" className={buttonVariants({ size: "lg", variant: "accent" })}>
+          <Link href="/vendre/nouvelle-annonce" className={buttonVariants({ size: "lg", variant: "inverse" })}>
             {t("sellCta")}
           </Link>
         </div>

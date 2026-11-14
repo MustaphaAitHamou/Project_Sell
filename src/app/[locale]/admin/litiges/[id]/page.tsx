@@ -41,7 +41,7 @@ export default async function AdminDisputePage({ params }: { params: Promise<{ i
         actions={
           <>
             <Badge tone={closed ? "neutral" : "danger"}>{STATUS[dispute.status]}</Badge>
-            <Link href={`/admin/commandes?o=${order.id}`} className="text-sm font-semibold text-primary hover:underline">
+            <Link href={`/admin/commandes?o=${order.id}`} className="text-sm font-semibold text-primary-text hover:underline">
               Dossier de la commande
             </Link>
           </>

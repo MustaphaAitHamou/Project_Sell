@@ -58,3 +58,15 @@ Format : contexte → décision → conséquences. Les décisions marquées « �
 
 ## ADR-019 — Sitemaps et robots calculés à la demande
 **Décision** : aucune requête en base pendant le build ; index de sitemaps paginé ; indexation interdite hors production réelle. **Conséquences** : build reproductible en CI sans base ; préproduction jamais indexée.
+
+## ADR-020 — Identité Tamurt Market (DA Tamurt Services)
+**Décision** : appliquer la DA commune de Tamurt Services. Les jetons sont dans `src/app/globals.css` ; les noms de variables existants sont conservés.
+- **Miel en aplat** (`--primary` `#f6a609`, texte `--primary-foreground` `#2b1d00`, 8:1). Le miel n'a que 1,9:1 sur fond clair : tout texte de marque passe en ocre (`--primary-text`, `#8a5300` / `#f8ba3c`), comme les bordures de sélection. Les boutons pleins portent un liseré ocre de 1,5 px.
+- **Statuts de la DA**. L'attention passe en orange brûlé (`#b54708` / `#ff9e5e`) : la valeur commune de la famille est identique au miel de Market.
+- **Terre cuite** conservée en accent ponctuel : favoris, compteurs non lus, coin artisan. Étoiles d'avis en miel profond (`--rating`).
+- **Montserrat** via `next/font`, qui couvre aussi les lettres kabyles.
+- **Coins** : 10 px pour les champs et puces, 12 px pour les boutons, 14 px pour les cartes.
+- **Frise « damier »** sous le bandeau d'accueil. Bandeau « Vendre » en dégradé miel avec un bouton inversé (encre, texte miel vif).
+- **Bouton yaz** rouge en haut à droite, affiché seulement si `TAMURT_SERVICES_URL` est renseignée.
+**Conséquences** : un composant qui écrit `text-primary` afficherait du miel illisible ; il faut utiliser `text-primary-text`.
+

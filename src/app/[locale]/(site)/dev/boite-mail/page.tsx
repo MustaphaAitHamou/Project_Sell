@@ -9,7 +9,7 @@ function linkify(text: string) {
   const parts = text.split(/(https?:\/\/[^\s]+)/g);
   return parts.map((p, i) =>
     /^https?:\/\//.test(p) ? (
-      <a key={i} href={p} className="font-medium break-all text-primary underline">
+      <a key={i} href={p} className="font-medium break-all text-primary-text underline">
         {p}
       </a>
     ) : (

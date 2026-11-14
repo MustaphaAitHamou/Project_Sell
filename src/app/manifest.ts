@@ -7,9 +7,14 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Acheter et vendre entre particuliers et professionnels, en France et en Algérie.",
     start_url: "/",
     display: "standalone",
-    background_color: "#f8faf8",
-    theme_color: "#126b50",
+    background_color: "#f6f5f2",
+    theme_color: "#f6a609",
     lang: "fr",
-    icons: [{ src: "/icon.svg", sizes: "any", type: "image/svg+xml" }],
+    icons: [
+      { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+      { src: "/icons/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/brand/icone.svg", sizes: "any", type: "image/svg+xml" },
+    ],
   };
 }

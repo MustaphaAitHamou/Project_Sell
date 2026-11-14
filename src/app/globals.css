@@ -4,35 +4,40 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Identité visuelle Tamurt Market
- * ────────────────────────────────
- * - Vert profond #126B50 : confiance, sérieux (couleur principale)
- * - Blanc cassé #F8FAF8 : fond lumineux et calme
- * - Anthracite #202A25 : texte, contraste élevé
- * - Terre cuite : accent discret (mises en avant ponctuelles), évoque l'artisanat
+ * Identité Tamurt Market (DA Tamurt Services)
+ * ───────────────────────────────────────────
+ * - Jaune miel #f6a609 : la couleur de l'app, en aplat, avec un texte encre #2b1d00 (8:1).
+ *   Le miel ne sert jamais de couleur de texte sur fond clair (1,9:1) : le texte de marque
+ *   passe en ocre (--primary-text, #8a5300). Les aplats de miel portent un liseré ocre
+ *   quand ils doivent se détacher du fond.
+ * - Neutres chauds communs à toute la famille Tamurt.
+ * - Terre cuite en accent ponctuel (favoris, compteurs non lus, coin artisan).
+ * - Attention en orange brûlé : distincte du miel de la marque.
+ * - Rouge Tamurt réservé au bouton yaz, le lien vers la maison mère.
  *
  * Toute la palette est définie ici sous forme de jetons : la modifier ne demande
  * aucune intervention dans les composants. Contrastes vérifiés AA (texte ≥ 4,5:1).
  */
 :root {
-  --background: #f8faf8;
-  --foreground: #202a25;
+  --background: #f6f5f2;
+  --foreground: #1d1b19;
   --card: #ffffff;
-  --card-foreground: #202a25;
+  --card-foreground: #1d1b19;
   --popover: #ffffff;
-  --muted: #eef2ef;
-  --muted-foreground: #56625b;
-  --subtle: #f3f6f4;
-  --border: #dce3de;
-  --border-strong: #c4cec7;
-  --input: #c9d3cc;
-  --ring: #126b50;
+  --muted: #ebe9e4;
+  --muted-foreground: #5c5852;
+  --subtle: #f1f0ec;
+  --border: #dedbd4;
+  --border-strong: #8a857c;
+  --input: #8a857c;
+  --ring: #1d1b19;
 
-  --primary: #126b50;
-  --primary-hover: #0e5741;
-  --primary-foreground: #ffffff;
-  --primary-soft: #e2f1ea;
-  --primary-soft-foreground: #0c4a37;
+  --primary: #f6a609;
+  --primary-hover: #e09708;
+  --primary-foreground: #2b1d00;
+  --primary-text: #8a5300;
+  --primary-soft: #fff3d6;
+  --primary-soft-foreground: #8a5300;
 
   --accent: #ad502c;
   --accent-hover: #93421f;
@@ -40,48 +45,55 @@
   --accent-soft: #fbece4;
   --accent-soft-foreground: #84391b;
 
-  --destructive: #c0352e;
+  --destructive: #b8261a;
   --destructive-foreground: #ffffff;
-  --destructive-soft: #fcebea;
-  --destructive-soft-foreground: #8f231d;
-  --success: #1c7d52;
-  --success-soft: #e4f3eb;
-  --success-soft-foreground: #125a3a;
-  --warning: #935a0b;
-  --warning-soft: #fdf2df;
-  --warning-soft-foreground: #7a4a08;
-  --info: #22599a;
-  --info-soft: #e8f0fa;
-  --info-soft-foreground: #183f6e;
+  --destructive-soft: #fde9e7;
+  --destructive-soft-foreground: #b8261a;
+  --success: #0b6e5b;
+  --success-soft: #e0f4ef;
+  --success-soft-foreground: #0b6e5b;
+  --warning: #b54708;
+  --warning-soft: #ffead5;
+  --warning-soft-foreground: #b54708;
+  --info: #1f58b0;
+  --info-soft: #e6eefb;
+  --info-soft-foreground: #1f58b0;
 
-  --overlay: rgb(15 23 19 / 0.5);
-  --shadow-color: 150 20% 15%;
+  --rating: #b86e00;
+  /* Fixes dans les deux thèmes : le bandeau de marque et le rouge de la famille. */
+  --brand-gradient: linear-gradient(57deg, #ef8e00 0%, #f6a609 42%, #ffc53d 100%);
+  --brand-ink: #2b1d00;
+  --brand-vif: #ffc53d;
+
+  --overlay: rgb(29 27 25 / 0.5);
+  --shadow-color: 30 10% 15%;
   --radius: 0.875rem;
 
-  /* Couleur des marques de graphiques (validée : bande de luminosité, chroma, contraste ≥ 3:1). */
-  --chart-1: #16855f;
+  /* Couleur des marques de graphiques (miel profond, ≥ 3:1 sur blanc). */
+  --chart-1: #b86e00;
 }
 
 .dark {
-  --chart-1: #2fa877;
-  --background: #0f1512;
-  --foreground: #e6ede8;
-  --card: #161e1a;
-  --card-foreground: #e6ede8;
-  --popover: #1a2420;
-  --muted: #1d2823;
-  --muted-foreground: #9eaba3;
-  --subtle: #131b17;
-  --border: #29352f;
-  --border-strong: #37463e;
-  --input: #3a4941;
-  --ring: #49c495;
+  --chart-1: #f6a609;
+  --background: #141312;
+  --foreground: #f4f1ec;
+  --card: #1f1d1b;
+  --card-foreground: #f4f1ec;
+  --popover: #24221f;
+  --muted: #2a2724;
+  --muted-foreground: #b5afa6;
+  --subtle: #191816;
+  --border: #35322e;
+  --border-strong: #8a847b;
+  --input: #8a847b;
+  --ring: #f4f1ec;
 
-  --primary: #3fb98a;
-  --primary-hover: #57c99c;
-  --primary-foreground: #06170f;
-  --primary-soft: #143529;
-  --primary-soft-foreground: #a6e6cb;
+  --primary: #f6a609;
+  --primary-hover: #e09708;
+  --primary-foreground: #2b1d00;
+  --primary-text: #f8ba3c;
+  --primary-soft: #382805;
+  --primary-soft-foreground: #f8ba3c;
 
   --accent: #e08a62;
   --accent-hover: #ea9c78;
@@ -89,22 +101,24 @@
   --accent-soft: #382218;
   --accent-soft-foreground: #f4c6ad;
 
-  --destructive: #f0736b;
-  --destructive-foreground: #1d0503;
-  --destructive-soft: #3a1917;
-  --destructive-soft-foreground: #f8b8b3;
-  --success: #57c48f;
-  --success-soft: #133325;
-  --success-soft-foreground: #a8e5c6;
-  --warning: #e5ad52;
-  --warning-soft: #362813;
-  --warning-soft-foreground: #f2d29c;
-  --info: #79aef0;
-  --info-soft: #172a42;
-  --info-soft-foreground: #bcd6f7;
+  --destructive: #ff8f85;
+  --destructive-foreground: #3d1512;
+  --destructive-soft: #3d1512;
+  --destructive-soft-foreground: #ff8f85;
+  --success: #5fd3bb;
+  --success-soft: #0a2a24;
+  --success-soft-foreground: #5fd3bb;
+  --warning: #ff9e5e;
+  --warning-soft: #3a1d0a;
+  --warning-soft-foreground: #ff9e5e;
+  --info: #8fb6f5;
+  --info-soft: #122444;
+  --info-soft-foreground: #8fb6f5;
+
+  --rating: #f6a609;
 
   --overlay: rgb(0 0 0 / 0.6);
-  --shadow-color: 150 30% 2%;
+  --shadow-color: 30 20% 2%;
 }
 
 @theme inline {
@@ -123,6 +137,7 @@
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-text: var(--primary-text);
   --color-primary-soft: var(--primary-soft);
   --color-primary-soft-foreground: var(--primary-soft-foreground);
   --color-accent: var(--accent);
@@ -145,12 +160,16 @@
   --color-info-soft: var(--info-soft);
   --color-info-soft-foreground: var(--info-soft-foreground);
   --color-overlay: var(--overlay);
+  --color-rating: var(--rating);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-vif: var(--brand-vif);
 
+  /* Coins de la DA Market : 10 px champs et puces, 12 px boutons, 14 px cartes, 16 px panneaux. */
   --radius-sm: calc(var(--radius) - 6px);
-  --radius-md: calc(var(--radius) - 3px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 6px);
-  --radius-2xl: calc(var(--radius) + 12px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: calc(var(--radius) - 2px);
+  --radius-xl: var(--radius);
+  --radius-2xl: calc(var(--radius) + 2px);
 
   --shadow-soft: 0 1px 2px hsl(var(--shadow-color) / 0.06), 0 2px 8px hsl(var(--shadow-color) / 0.06);
   --shadow-lift: 0 2px 4px hsl(var(--shadow-color) / 0.06), 0 12px 32px -8px hsl(var(--shadow-color) / 0.18);
@@ -201,7 +220,6 @@
   body {
     background: var(--background);
     color: var(--foreground);
-    font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -211,7 +229,7 @@
   h4 {
     font-family: var(--font-display);
     text-wrap: balance;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
   }
   p {
     text-wrap: pretty;
@@ -292,7 +310,7 @@
     color: var(--foreground);
   }
   .prose-legal a {
-    color: var(--primary);
+    color: var(--primary-text);
     font-weight: 600;
     text-decoration: underline;
     text-underline-offset: 3px;
@@ -303,4 +321,12 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* Frise Market « damier » : l'étal vu de dessus, le tapis déroulé sur la place. Décorative, 12 px. */
+@utility frise {
+  height: 12px;
+  background-color: var(--primary);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 12 12%22 width=%2212%22 height=%2212%22 fill=%22%23000%22%3E%3Cpath d=%22M0 0h6v6H0zM6 6h6v6H6z%22/%3E%3C/svg%3E") left center / auto 100% repeat-x;
+  mask: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 12 12%22 width=%2212%22 height=%2212%22 fill=%22%23000%22%3E%3Cpath d=%22M0 0h6v6H0zM6 6h6v6H6z%22/%3E%3C/svg%3E") left center / auto 100% repeat-x;
 }

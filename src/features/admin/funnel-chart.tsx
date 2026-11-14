@@ -41,7 +41,7 @@ export function FunnelChart({ title, steps, note }: { title: string; steps: { la
       </ol>
       {note ? <p className="text-xs text-muted-foreground">{note}</p> : null}
       <details className="text-sm">
-        <summary className="cursor-pointer text-xs font-medium text-primary">Voir le tableau</summary>
+        <summary className="cursor-pointer text-xs font-medium text-primary-text">Voir le tableau</summary>
         <table className="mt-2 w-full text-sm">
           <thead>
             <tr className="text-start text-xs text-muted-foreground">

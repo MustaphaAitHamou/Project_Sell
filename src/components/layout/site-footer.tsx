@@ -38,6 +38,7 @@ export async function SiteFooter() {
       <div className="container-page grid gap-10 py-12 md:grid-cols-[1.4fr_repeat(3,1fr)]">
         <div className="grid content-start gap-4">
           <Logo />
+          <p className="text-lg leading-snug font-extrabold text-balance text-primary-text">{t("footer.slogan")}</p>
           <p className="max-w-xs text-sm text-muted-foreground">{t("footer.tagline")}</p>
           <div className="rounded-lg border border-border bg-subtle p-3 text-xs text-muted-foreground">
             <p className="font-semibold text-foreground">{t("footer.ecosystem")} · {t("footer.transport")}</p>

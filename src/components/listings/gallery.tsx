@@ -83,7 +83,7 @@ export function Gallery({ images, title }: { images: Img[]; title: string }) {
               onClick={() => go(i)}
               aria-label={t("photoOf", { index: i + 1, total: images.length })}
               aria-current={i === index}
-              className={cn("size-20 shrink-0 overflow-hidden rounded-lg border-2 bg-muted transition-colors", i === index ? "border-primary" : "border-transparent opacity-80 hover:opacity-100")}
+              className={cn("size-20 shrink-0 overflow-hidden rounded-lg border-2 bg-muted transition-colors", i === index ? "border-primary-text" : "border-transparent opacity-80 hover:opacity-100")}
             >
               <img src={imageUrl(img.id, "thumb")} alt="" className="size-full object-cover" loading="lazy" />
             </button>

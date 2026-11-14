@@ -61,7 +61,7 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
           </span>,
           l.metadata ? (
             <details key="m" className="max-w-sm text-xs">
-              <summary className="cursor-pointer text-primary">Voir</summary>
+              <summary className="cursor-pointer text-primary-text">Voir</summary>
               <pre className="mt-1 overflow-x-auto rounded bg-subtle p-2 whitespace-pre-wrap">{JSON.stringify(l.metadata, null, 2)}</pre>
             </details>
           ) : (

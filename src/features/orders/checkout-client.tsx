@@ -15,9 +15,9 @@ export function CheckoutOption({ href, selected, children }: { href: string; sel
       role="radio"
       aria-checked={selected}
       onClick={() => router.replace(href, { scroll: false })}
-      className={`flex w-full items-start gap-3 rounded-xl border p-3 text-start text-sm transition-colors ${selected ? "border-primary bg-primary-soft/50" : "border-border hover:bg-muted"}`}
+      className={`flex w-full items-start gap-3 rounded-xl border p-3 text-start text-sm transition-colors ${selected ? "border-primary-text bg-primary-soft/50" : "border-border hover:bg-muted"}`}
     >
-      <span className={`mt-0.5 grid size-4 shrink-0 place-items-center rounded-full border-2 ${selected ? "border-primary" : "border-border-strong"}`}>{selected ? <span className="size-2 rounded-full bg-primary" /> : null}</span>
+      <span className={`mt-0.5 grid size-4 shrink-0 place-items-center rounded-full border-2 ${selected ? "border-primary-text" : "border-border-strong"}`}>{selected ? <span className="size-2 rounded-full bg-primary" /> : null}</span>
       <span className="grid flex-1 gap-0.5">{children}</span>
     </button>
   );

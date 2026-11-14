@@ -1,6 +1,7 @@
 import { Bell, Heart, MessageCircle, Plus } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Logo } from "@/components/brand/logo";
+import { TamurtYaz } from "@/components/brand/tamurt-yaz";
 import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { avatarUrl, cn } from "@/lib/utils";
@@ -69,6 +70,7 @@ export async function SiteHeader({ user, query }: { user: CurrentUser | null; qu
               </Link>
             </>
           )}
+          <TamurtYaz />
         </nav>
       </div>
       <div className="container-page pb-3 md:hidden">

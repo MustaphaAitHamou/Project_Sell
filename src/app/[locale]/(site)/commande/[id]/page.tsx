@@ -70,7 +70,7 @@ export default async function OrderPage({ params, searchParams }: Props) {
           {isBuyer && handoverCode ? (
             <Card className="grid gap-3 border-primary/30 bg-primary-soft/40 p-5">
               <p className="flex items-center gap-2 font-semibold">
-                <KeyRound className="size-5 text-primary" aria-hidden /> Votre code de remise
+                <KeyRound className="size-5 text-primary-text" aria-hidden /> Votre code de remise
               </p>
               <p className="font-mono text-3xl font-bold tracking-[0.3em]" data-testid="handover-code">
                 {handoverCode}
@@ -108,7 +108,7 @@ export default async function OrderPage({ params, searchParams }: Props) {
           {isBuyer && order.status === "DISPUTE_WINDOW" ? (
             <Card className="grid gap-3 p-5">
               <p className="flex items-center gap-2 font-semibold">
-                <ShieldCheck className="size-5 text-primary" aria-hidden /> Vérifiez votre article
+                <ShieldCheck className="size-5 text-primary-text" aria-hidden /> Vérifiez votre article
               </p>
               <p className="text-sm text-muted-foreground">
                 Sans action de votre part, la vente sera clôturée le {order.disputeWindowEndsAt ? format.dateTime(order.disputeWindowEndsAt, { dateStyle: "long", timeStyle: "short" }) : "—"} et le vendeur sera payé.
@@ -124,7 +124,7 @@ export default async function OrderPage({ params, searchParams }: Props) {
 
           {isBuyer && ["SHIPPING_PENDING", "READY_TO_SHIP", "IN_TRANSIT"].includes(order.status) ? (
             <p className="text-sm text-muted-foreground">
-              Un problème ? <Link href={`/commande/${order.id}/litige`} className="font-medium text-primary underline">Ouvrir un litige</Link> (article non reçu après le délai prévu, etc.).
+              Un problème ? <Link href={`/commande/${order.id}/litige`} className="font-medium text-primary-text underline">Ouvrir un litige</Link> (article non reçu après le délai prévu, etc.).
             </p>
           ) : null}
 

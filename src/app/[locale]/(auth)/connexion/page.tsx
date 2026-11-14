@@ -21,7 +21,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
       footer={
         <>
           {t("noAccount")}{" "}
-          <Link href="/inscription" className="font-semibold text-primary hover:underline">
+          <Link href="/inscription" className="font-semibold text-primary-text hover:underline">
             {t("signUpCta")}
           </Link>
         </>

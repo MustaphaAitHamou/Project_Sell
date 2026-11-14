@@ -88,7 +88,7 @@ export default async function AdminListingsPage({ searchParams }: { searchParams
                 {l.isDemo ? " · démonstration" : ""}
               </span>
             </div>,
-            <Link key="s" href={`/admin/utilisateurs?u=${l.sellerId}`} className="text-primary hover:underline">
+            <Link key="s" href={`/admin/utilisateurs?u=${l.sellerId}`} className="text-primary-text hover:underline">
               {l.seller.profile?.displayName ?? "—"}
             </Link>,
             <ListingStatusBadge key="b" status={l.status} />,

@@ -42,7 +42,7 @@ export default async function MyListingsPage({ searchParams }: { searchParams: P
         {TABS.map((tab) => {
           const count = tab.key === "ALL" ? all.length : all.filter((l) => l.status === tab.key).length;
           return (
-            <Link key={tab.key} href={`/compte/annonces?statut=${tab.key}`} aria-current={statut === tab.key ? "page" : undefined} className={cn("shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium", statut === tab.key ? "border-primary bg-primary-soft text-primary-soft-foreground" : "border-border text-muted-foreground hover:bg-muted")}>
+            <Link key={tab.key} href={`/compte/annonces?statut=${tab.key}`} aria-current={statut === tab.key ? "page" : undefined} className={cn("shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium", statut === tab.key ? "border-primary-text bg-primary-soft text-primary-soft-foreground" : "border-border text-muted-foreground hover:bg-muted")}>
               {tab.label} <span className="tabular-nums">({count})</span>
             </Link>
           );

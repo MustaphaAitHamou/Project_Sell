@@ -116,7 +116,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
                 {selected.email} · inscrit le {dateFmt.format(selected.createdAt)} · {selected.emailVerified ? "e-mail vérifié" : "e-mail non vérifié"} · 2FA {selected.twoFactorEnabled ? "active" : "inactive"}
               </p>
             </div>
-            <Link href={qs(page)} className="text-sm font-medium text-primary hover:underline">
+            <Link href={qs(page)} className="text-sm font-medium text-primary-text hover:underline">
               Fermer
             </Link>
           </CardHeader>
@@ -139,7 +139,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
                 {selected._count.listings} annonce(s) · {selected._count.ordersAsBuyer} achat(s) · {selected._count.ordersAsSeller} vente(s) · {selected.profile?.disputesLostCount ?? 0} litige(s) perdu(s) · {reportsAgainst} signalement(s) reçu(s)
               </p>
               {selected.profile ? (
-                <Link href={`/vendeur/${selected.profile.handle}`} className="font-medium text-primary hover:underline">
+                <Link href={`/vendeur/${selected.profile.handle}`} className="font-medium text-primary-text hover:underline">
                   Profil public
                 </Link>
               ) : null}
@@ -171,7 +171,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
         head={["Membre", "E-mail", "Statut", "Rôles", "Pays", "Annonces", "Achats", "Inscription"]}
         empty="Aucun membre ne correspond."
         rows={users.map((u) => [
-          <Link key="n" href={`${qs(page)}${qs(page).includes("?") ? "&" : "?"}u=${u.id}`} className="font-medium text-primary hover:underline">
+          <Link key="n" href={`${qs(page)}${qs(page).includes("?") ? "&" : "?"}u=${u.id}`} className="font-medium text-primary-text hover:underline">
             {u.profile?.displayName ?? "(profil incomplet)"}
             {u.profile ? <span className="block text-xs font-normal text-muted-foreground">@{u.profile.handle}</span> : null}
           </Link>,

@@ -19,6 +19,9 @@ Documents juridiques ; statut de paiement ; ouverture internationale ; activité
 ### Préparé mais non activé
 Langues `ar` (droite-à-gauche), `kab`, `en` (routage prêt, traductions à produire) ; fonctions d'IA (indicateurs à `false`, aucune implémentation, aucune sanction automatique prévue) ; commission vendeur (modèle de frais prêt) ; recherches sauvegardées (modèle prêt).
 
+### Identité visuelle
+DA Tamurt Services appliquée (ADR-020). Le bouton yaz reste masqué tant que `TAMURT_SERVICES_URL` est vide, puisque le site Tamurt Services n'est pas encore en ligne. Les e-mails affichent la marque en texte (TAMURT rouge + Market) : plusieurs clients mail bloquent les images SVG.
+
 ## Priorités proposées
 
 1. **Décisions** : prestataire de paiement (proposition comparée à préparer), validation juridique des CGU/confidentialité, hébergement UE.

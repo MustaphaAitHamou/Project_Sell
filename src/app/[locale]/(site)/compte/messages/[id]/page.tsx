@@ -30,13 +30,13 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
           <div>
             <h1 className="text-lg font-bold">{name}</h1>
             {counterpart.profile?.handle ? (
-              <Link href={`/vendeur/${counterpart.profile.handle}`} className="text-xs text-primary hover:underline">
+              <Link href={`/vendeur/${counterpart.profile.handle}`} className="text-xs text-primary-text hover:underline">
                 Voir le profil
               </Link>
             ) : null}
           </div>
         </div>
-        <Link href="/compte/messages" className="text-sm font-medium text-primary hover:underline">
+        <Link href="/compte/messages" className="text-sm font-medium text-primary-text hover:underline">
           Toutes les conversations
         </Link>
       </div>
