@@ -22,6 +22,12 @@ Langues `ar` (droite-à-gauche), `kab`, `en` (routage prêt, traductions à prod
 ### Identité visuelle
 DA Tamurt Services appliquée (ADR-020). Le bouton yaz reste masqué tant que `TAMURT_SERVICES_URL` est vide, puisque le site Tamurt Services n'est pas encore en ligne. Les e-mails affichent la marque en texte (TAMURT rouge + Market) : plusieurs clients mail bloquent les images SVG.
 
+Refonte de l'accueil (20/11/2026), après retour du porteur de projet (« interface trop chargée, boutons peu engageants, trait jaune inutile, pas assez d'illustrations ») :
+- damier jaune retiré ; boutons en pilules douces, sans bordure épaisse, avec une ombre chaude et un léger soulèvement au survol (désactivé si mouvements réduits) ;
+- accueil allégé : plus de recherche en double (celle de l'en-tête suffit), garanties réduites à trois puces, huit catégories en tuiles colorées au lieu de seize ;
+- illustrations originales : colis ouvert d'où sortent des objets, route France–Algérie et conversation (accueil) ; « Vendre, c'est simple » en trois étapes illustrées (remplace le bandeau de vente) ; camionnette et mer pour Tamurt Transport ;
+- vérifié avec une base PostgreSQL locale et le jeu de démonstration : `pnpm typecheck`, `pnpm lint`, 71 tests unitaires, 35 tests d'intégration, 34 E2E (build de production) ; rendu contrôlé en clair, en sombre et sur mobile (390 px, sans débordement).
+
 ## Priorités proposées
 
 1. **Décisions** : prestataire de paiement (proposition comparée à préparer), validation juridique des CGU/confidentialité, hébergement UE.

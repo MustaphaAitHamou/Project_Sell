@@ -100,7 +100,7 @@
   },
   "home": {
     "heroTitle": "Achetez et vendez entre la France et l'Algérie, en toute confiance.",
-    "heroSubtitle": "Mode, high-tech, artisanat, maison… Publiez en quelques minutes, échangez en messagerie sécurisée et payez avec protection acheteur lorsque le service est disponible dans votre pays.",
+    "heroSubtitle": "Mode, high-tech, artisanat, maison… Publiez en quelques minutes et échangez en toute sécurité avec la communauté.",
     "heroSearchCta": "Rechercher",
     "heroSell": "Vendre maintenant",
     "trust1Title": "Paiement protégé",
@@ -121,7 +121,18 @@
     "transportCta": "Comprendre le fonctionnement",
     "sellTitle": "Un article qui dort dans un placard ?",
     "sellText": "Publiez-le gratuitement en quelques minutes. Les frais de protection sont payés par l'acheteur.",
-    "sellCta": "Publier une annonce"
+    "sellCta": "Publier une annonce",
+    "exploreCta": "Explorer les articles",
+    "seeAll": "Voir tout",
+    "allCategories": "Toutes les catégories",
+    "stepsTitle": "Vendre, c'est simple",
+    "step1Title": "Photographiez",
+    "step1Text": "Quelques photos et une description : votre annonce est en ligne en quelques minutes.",
+    "step2Title": "Échangez",
+    "step2Text": "Répondez aux acheteurs dans la messagerie, vos coordonnées restent privées.",
+    "step3Title": "Remettez ou expédiez",
+    "step3Text": "En main propre avec un code de remise, ou par envoi dans votre pays.",
+    "trustLabel": "Nos garanties"
   },
   "listing": {
     "price": "Prix",
